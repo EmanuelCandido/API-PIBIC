@@ -1,0 +1,46 @@
+package com.SistemaApiCrud.SistemaCrud.controller;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import com.SistemaApiCrud.SistemaCrud.entity.casos_clinicos;
+import com.SistemaApiCrud.SistemaCrud.service.caso_clinico_service;
+
+@RestController
+@RequestMapping("/casos")
+public class caso_clinico_controller {
+
+	  @Autowired
+	    private caso_clinico_service service;
+
+	    @GetMapping
+	    public List<casos_clinicos> listar() {
+	        return service.listar();
+	    }
+
+	    @PostMapping
+	    public casos_clinicos salvar(@RequestBody casos_clinicos caso) {
+	        return service.salvar(caso);
+	    }
+
+	    @PutMapping("/{id}")
+	    public casos_clinicos atualizar(@PathVariable Long id,
+	                                   @RequestBody casos_clinicos caso) {
+
+	        return service.atualizar(id, caso);
+	    }
+
+	    @DeleteMapping("/{id}")
+	    public void deletar(@PathVariable Long id) {
+	        service.deletar(id);
+	    }
+	
+}
