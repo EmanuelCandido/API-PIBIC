@@ -2,6 +2,8 @@ package com.SistemaApiCrud.SistemaCrud.controller;
 
 import java.util.List;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -29,12 +31,12 @@ public class aluno_controller {
     }
 
     @PostMapping
-    public aluno_DTO salvar(@RequestBody aluno_DTO aluno) {
+    public aluno_DTO salvar(@RequestBody @Valid @Min(1) aluno_DTO aluno) {
         return service.salvar(aluno);
     }
 
     @PutMapping("/{id}")
-    public aluno_DTO atualizar(@PathVariable Long id, @RequestBody aluno_DTO aluno) {
+    public aluno_DTO atualizar(@PathVariable Long id, @RequestBody @Valid aluno_DTO aluno) {
     	return service.atualizar(id, aluno);
     }
 

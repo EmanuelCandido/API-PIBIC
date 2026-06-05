@@ -3,6 +3,7 @@ package com.SistemaApiCrud.SistemaCrud.controller;
 import java.util.List;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -31,7 +32,7 @@ public class paciente_controller {
     }
 
     @PostMapping
-    public paciente_DTO salvar(@RequestBody @Valid paciente_DTO paciente) {
+    public paciente_DTO salvar(@RequestBody @Valid @Min(1) paciente_DTO paciente) {
         return service.salvar(paciente);
     }
 

@@ -2,6 +2,8 @@ package com.SistemaApiCrud.SistemaCrud.controller;
 
 import java.util.List;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -29,13 +31,13 @@ public class caso_clinico_controller {
 	    }
 
 	    @PostMapping
-	    public casos_clinicos_DTO salvar(@RequestBody casos_clinicos_DTO caso) {
+	    public casos_clinicos_DTO salvar(@RequestBody @Valid @Min(1) casos_clinicos_DTO caso) {
 	        return service.salvar(caso);
 	    }
 
 	    @PutMapping("/{id}")
 	    public casos_clinicos_DTO atualizar(@PathVariable Long id,
-	                                    @RequestBody casos_clinicos_DTO caso) {
+	                                    @RequestBody @Valid casos_clinicos_DTO caso) {
 
 	        return service.atualizar(id, caso);
 	    }
