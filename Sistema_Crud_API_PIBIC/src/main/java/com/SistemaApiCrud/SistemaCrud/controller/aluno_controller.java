@@ -3,6 +3,7 @@ package com.SistemaApiCrud.SistemaCrud.controller;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -11,9 +12,10 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import com.SistemaApiCrud.SistemaCrud.entity.Aluno;
+import com.SistemaApiCrud.SistemaCrud.DTO.aluno_DTO;
 import com.SistemaApiCrud.SistemaCrud.service.aluno_service;
 
+@Validated
 @RestController
 @RequestMapping("/alunos")
 public class aluno_controller {
@@ -22,17 +24,17 @@ public class aluno_controller {
     private aluno_service service;
 
     @GetMapping
-    public List<Aluno> listar() {
+    public List<aluno_DTO> listar() {
         return service.listar();
     }
 
     @PostMapping
-    public Aluno salvar(@RequestBody Aluno aluno) {
+    public aluno_DTO salvar(@RequestBody aluno_DTO aluno) {
         return service.salvar(aluno);
     }
 
     @PutMapping("/{id}")
-    public Aluno atualizar(@PathVariable Long id, @RequestBody Aluno aluno) {
+    public aluno_DTO atualizar(@PathVariable Long id, @RequestBody aluno_DTO aluno) {
     	return service.atualizar(id, aluno);
     }
 

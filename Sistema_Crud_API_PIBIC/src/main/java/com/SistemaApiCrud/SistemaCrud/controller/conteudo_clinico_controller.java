@@ -3,6 +3,7 @@ package com.SistemaApiCrud.SistemaCrud.controller;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -12,9 +13,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.SistemaApiCrud.SistemaCrud.entity.conteudo_clinico;
+import com.SistemaApiCrud.SistemaCrud.DTO.conteudo_clinico_DTO;
 import com.SistemaApiCrud.SistemaCrud.service.conteudo_clinico_service;
 
+@Validated
 @RestController
 @RequestMapping("/conteudos")
 public class conteudo_clinico_controller {
@@ -23,18 +25,18 @@ public class conteudo_clinico_controller {
     private conteudo_clinico_service service;
 
     @GetMapping
-    public List<conteudo_clinico> listar() {
+    public List<conteudo_clinico_DTO> listar() {
         return service.listar();
     }
 
     @PostMapping
-    public conteudo_clinico salvar(@RequestBody conteudo_clinico conteudo) {
+    public conteudo_clinico_DTO salvar(@RequestBody conteudo_clinico_DTO conteudo) {
         return service.salvar(conteudo);
     }
 
     @PutMapping("/{id}")
-    public conteudo_clinico atualizar(@PathVariable Long id,
-                                     @RequestBody conteudo_clinico conteudo) {
+    public conteudo_clinico_DTO atualizar(@PathVariable Long id,
+                                      @RequestBody conteudo_clinico_DTO conteudo) {
 
         return service.atualizar(id, conteudo);
     }

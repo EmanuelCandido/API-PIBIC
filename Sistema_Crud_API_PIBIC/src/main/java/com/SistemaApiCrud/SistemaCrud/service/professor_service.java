@@ -5,31 +5,60 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.SistemaApiCrud.SistemaCrud.DTO.Professor_DTO;
 import com.SistemaApiCrud.SistemaCrud.entity.Professor;
 import com.SistemaApiCrud.SistemaCrud.repository.professor_repository;
 
 @Service
 public class professor_service {
 
-	@Autowired
+    @Autowired
     private professor_repository repository;
-	
-	public List<Professor> listar() {
-        return repository.findAll();
+
+    public List<Professor_DTO> listar() {
+        return repository.findAll()
+                .stream()
+                .map(this::paraDTO)
+                .toList();
     }
 
-	public Professor salvar(Professor professor) {
-	        return repository.save(professor);
-	}
+    public Professor_DTO salvar(Professor_DTO dto) {
+        Professor professor = paraEntity(dto);
+        Professor professorSalvo = repository.save(professor);
+        return paraDTO(professorSalvo);
+    }
 
-	public void deletar(Long id) {
+    public void deletar(Long id) {
         repository.deleteById(id);
     }
 
-	public Professor atualizar(Long id, Professor professor) {
-
+    public Professor_DTO atualizar(Long id, Professor_DTO dto) {
+        Professor professor = paraEntity(dto);
         professor.setId(id);
-        
-        return repository.save(professor);
+
+        Professor professorAtualizado = repository.save(professor);
+        return paraDTO(professorAtualizado);
+    }
+
+    private Professor_DTO paraDTO(Professor professor) {
+        Professor_DTO dto = new Professor_DTO();
+
+        dto.setId(professor.getId());
+        dto.setNome(professor.getNome());
+        dto.setEmail(professor.getEmail());
+        dto.setMateria(professor.getMateria());
+
+        return dto;
+    }
+
+    private Professor paraEntity(Professor_DTO dto) {
+        Professor professor = new Professor();
+
+        professor.setId(dto.getId());
+        professor.setNome(dto.getNome());
+        professor.setEmail(dto.getEmail());
+        professor.setMateria(dto.getMateria());
+
+        return professor;
     }
 }

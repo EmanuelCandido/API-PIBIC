@@ -3,6 +3,7 @@ package com.SistemaApiCrud.SistemaCrud.controller;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -11,9 +12,10 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import com.SistemaApiCrud.SistemaCrud.entity.casos_clinicos;
+import com.SistemaApiCrud.SistemaCrud.DTO.casos_clinicos_DTO;
 import com.SistemaApiCrud.SistemaCrud.service.caso_clinico_service;
 
+@Validated
 @RestController
 @RequestMapping("/casos")
 public class caso_clinico_controller {
@@ -22,18 +24,18 @@ public class caso_clinico_controller {
 	    private caso_clinico_service service;
 
 	    @GetMapping
-	    public List<casos_clinicos> listar() {
+	    public List<casos_clinicos_DTO> listar() {
 	        return service.listar();
 	    }
 
 	    @PostMapping
-	    public casos_clinicos salvar(@RequestBody casos_clinicos caso) {
+	    public casos_clinicos_DTO salvar(@RequestBody casos_clinicos_DTO caso) {
 	        return service.salvar(caso);
 	    }
 
 	    @PutMapping("/{id}")
-	    public casos_clinicos atualizar(@PathVariable Long id,
-	                                   @RequestBody casos_clinicos caso) {
+	    public casos_clinicos_DTO atualizar(@PathVariable Long id,
+	                                    @RequestBody casos_clinicos_DTO caso) {
 
 	        return service.atualizar(id, caso);
 	    }

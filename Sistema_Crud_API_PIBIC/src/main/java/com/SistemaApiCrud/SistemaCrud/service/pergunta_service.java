@@ -5,32 +5,91 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.SistemaApiCrud.SistemaCrud.DTO.pergunta_DTO;
+import com.SistemaApiCrud.SistemaCrud.entity.casos_clinicos;
 import com.SistemaApiCrud.SistemaCrud.entity.pergunta;
+import com.SistemaApiCrud.SistemaCrud.repository.caso_clinico_repository;
 import com.SistemaApiCrud.SistemaCrud.repository.pergunta_repository;
 
 @Service
 public class pergunta_service {
 
-	@Autowired
+    @Autowired
     private pergunta_repository repository;
-	
-    public List<pergunta> listar() {
-        return repository.findAll();
+
+    @Autowired
+    private caso_clinico_repository casoRepository;
+
+    public List<pergunta_DTO> listar() {
+        return repository.findAll()
+                .stream()
+                .map(this::paraDTO)
+                .toList();
     }
 
-    public pergunta salvar(pergunta pergunta) {
-        return repository.save(pergunta);
+    public pergunta_DTO salvar(pergunta_DTO dto) {
+        pergunta pergunta = paraEntity(dto);
+        pergunta perguntaSalva = repository.save(pergunta);
+        return paraDTO(perguntaSalva);
     }
 
     public void deletar(Long id) {
         repository.deleteById(id);
     }
 
-    public pergunta atualizar(Long id, pergunta pergunta) {
-
+    public pergunta_DTO atualizar(Long id, pergunta_DTO dto) {
+        pergunta pergunta = paraEntity(dto);
         pergunta.setId(id);
 
-        return repository.save(pergunta);
+        pergunta perguntaAtualizada = repository.save(pergunta);
+        return paraDTO(perguntaAtualizada);
     }
-	
+
+    private pergunta_DTO paraDTO(pergunta pergunta) {
+        pergunta_DTO dto = new pergunta_DTO();
+
+        dto.setId(pergunta.getId());
+
+        if (pergunta.getCasoClinico() != null) {
+            dto.setIdCaso(pergunta.getCasoClinico().getIdCaso());
+        }
+
+        dto.setTexto(pergunta.getTexto());
+        dto.setAlternativaA(pergunta.getAlternativaA());
+        dto.setAlternativaB(pergunta.getAlternativaB());
+        dto.setAlternativaC(pergunta.getAlternativaC());
+        dto.setAlternativaD(pergunta.getAlternativaD());
+        dto.setAlternativaE(pergunta.getAlternativaE());
+        dto.setResposta(pergunta.getResposta());
+        dto.setTipo(pergunta.getTipo());
+        dto.setGabarito(pergunta.getGabarito());
+        dto.setTempoEsperado(pergunta.getTempoEsperado());
+
+        return dto;
+    }
+
+    private pergunta paraEntity(pergunta_DTO dto) {
+        pergunta pergunta = new pergunta();
+
+        pergunta.setId(dto.getId());
+
+        if (dto.getIdCaso() != null) {
+            casos_clinicos caso = casoRepository.findById(dto.getIdCaso())
+                    .orElseThrow(() -> new RuntimeException("Caso clínico não encontrado"));
+            pergunta.setCasoClinico(caso);
+        }
+
+        pergunta.setTexto(dto.getTexto());
+        pergunta.setAlternativaA(dto.getAlternativaA());
+        pergunta.setAlternativaB(dto.getAlternativaB());
+        pergunta.setAlternativaC(dto.getAlternativaC());
+        pergunta.setAlternativaD(dto.getAlternativaD());
+        pergunta.setAlternativaE(dto.getAlternativaE());
+        pergunta.setResposta(dto.getResposta());
+        pergunta.setTipo(dto.getTipo());
+        pergunta.setGabarito(dto.getGabarito());
+        pergunta.setTempoEsperado(dto.getTempoEsperado());
+
+        return pergunta;
+    }
 }
