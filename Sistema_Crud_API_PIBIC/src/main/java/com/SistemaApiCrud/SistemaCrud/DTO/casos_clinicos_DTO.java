@@ -1,5 +1,10 @@
 package com.SistemaApiCrud.SistemaCrud.DTO;
 
+import java.time.LocalDateTime;
+
+import com.SistemaApiCrud.SistemaCrud.entity.enums.NivelDificuldade;
+import com.SistemaApiCrud.SistemaCrud.entity.enums.StatusCasoClinico;
+
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -37,4 +42,14 @@ public class casos_clinicos_DTO {
 
     @NotBlank(message = "A especialidade e obrigatoria")
     private String especialidade;
+
+    private StatusCasoClinico status;
+
+    private LocalDateTime dataCriacao;
+
+    private LocalDateTime dataAtualizacao;
+
+    private String objetivoAprendizagem;
+
+    private NivelDificuldade nivelDificuldade;
 }

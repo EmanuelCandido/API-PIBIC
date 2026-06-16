@@ -16,7 +16,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.SistemaApiCrud.SistemaCrud.DTO.Professor_DTO;
+import com.SistemaApiCrud.SistemaCrud.DTO.casos_clinicos_DTO;
+import com.SistemaApiCrud.SistemaCrud.DTO.relatorio_desempenho_professor_DTO;
+import com.SistemaApiCrud.SistemaCrud.service.caso_clinico_service;
 import com.SistemaApiCrud.SistemaCrud.service.professor_service;
+import com.SistemaApiCrud.SistemaCrud.service.resposta_aluno_service;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
@@ -29,6 +33,12 @@ public class professor_controller {
     @Autowired
     private professor_service service;
 
+    @Autowired
+    private caso_clinico_service casoService;
+
+    @Autowired
+    private resposta_aluno_service respostaService;
+
     @GetMapping
     public List<Professor_DTO> listar() {
         return service.listar();
@@ -37,6 +47,16 @@ public class professor_controller {
     @GetMapping("/{id}")
     public ResponseEntity<Professor_DTO> buscarPorId(@PathVariable @Min(1) Long id) {
         return ResponseEntity.ok(service.buscarPorId(id));
+    }
+
+    @GetMapping("/{id}/casos")
+    public List<casos_clinicos_DTO> listarCasos(@PathVariable @Min(1) Long id) {
+        return casoService.listarPorProfessor(id);
+    }
+
+    @GetMapping("/{id}/relatorio-desempenho")
+    public ResponseEntity<relatorio_desempenho_professor_DTO> gerarRelatorioDesempenho(@PathVariable @Min(1) Long id) {
+        return ResponseEntity.ok(respostaService.gerarRelatorioProfessor(id));
     }
 
     @PostMapping

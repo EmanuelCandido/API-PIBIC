@@ -32,10 +32,26 @@ public class pergunta_service {
         return paraDTO(buscarEntityPorId(id));
     }
 
+    public List<pergunta_DTO> listarPorCaso(Long idCaso) {
+        if (!casoRepository.existsById(idCaso)) {
+            throw new RecursoNaoEncontradoException("Caso clinico nao encontrado");
+        }
+
+        return repository.findByCasoClinicoIdCaso(idCaso)
+                .stream()
+                .map(this::paraDTO)
+                .toList();
+    }
+
     public pergunta_DTO salvar(pergunta_DTO dto) {
         pergunta pergunta = paraEntity(dto);
         pergunta perguntaSalva = repository.save(pergunta);
         return paraDTO(perguntaSalva);
+    }
+
+    public pergunta_DTO salvarEmCaso(Long idCaso, pergunta_DTO dto) {
+        dto.setIdCaso(idCaso);
+        return salvar(dto);
     }
 
     public pergunta_DTO atualizar(Long id, pergunta_DTO dto) {

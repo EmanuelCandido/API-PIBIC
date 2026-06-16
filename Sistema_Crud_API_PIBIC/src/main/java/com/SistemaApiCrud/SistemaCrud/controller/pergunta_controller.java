@@ -39,9 +39,21 @@ public class pergunta_controller {
         return ResponseEntity.ok(service.buscarPorId(id));
     }
 
+    @GetMapping("/caso/{casoId}")
+    public List<pergunta_DTO> listarPorCaso(@PathVariable @Min(1) Long casoId) {
+        return service.listarPorCaso(casoId);
+    }
+
     @PostMapping
     public ResponseEntity<pergunta_DTO> salvar(@RequestBody @Valid pergunta_DTO pergunta) {
         pergunta_DTO perguntaSalva = service.salvar(pergunta);
+        return ResponseEntity.status(HttpStatus.CREATED).body(perguntaSalva);
+    }
+
+    @PostMapping("/caso/{casoId}")
+    public ResponseEntity<pergunta_DTO> salvarEmCaso(@PathVariable @Min(1) Long casoId,
+                                                     @RequestBody @Valid pergunta_DTO pergunta) {
+        pergunta_DTO perguntaSalva = service.salvarEmCaso(casoId, pergunta);
         return ResponseEntity.status(HttpStatus.CREATED).body(perguntaSalva);
     }
 

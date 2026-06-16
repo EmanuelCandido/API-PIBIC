@@ -1,9 +1,12 @@
 package com.SistemaApiCrud.SistemaCrud.repository;
 
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.SistemaApiCrud.SistemaCrud.entity.paciente;
 
 public interface paciente_repository extends JpaRepository<paciente, Long> {
 
+    List<paciente> findByCasoClinicoIdCaso(Long idCaso);
 }

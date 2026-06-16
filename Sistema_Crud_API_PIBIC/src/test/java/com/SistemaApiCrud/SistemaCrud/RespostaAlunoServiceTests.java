@@ -1,0 +1,109 @@
+package com.SistemaApiCrud.SistemaCrud;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+import java.util.List;
+
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+
+import com.SistemaApiCrud.SistemaCrud.DTO.responder_caso_request_DTO;
+import com.SistemaApiCrud.SistemaCrud.DTO.resposta_pergunta_request_DTO;
+import com.SistemaApiCrud.SistemaCrud.DTO.resultado_caso_DTO;
+import com.SistemaApiCrud.SistemaCrud.entity.Aluno;
+import com.SistemaApiCrud.SistemaCrud.entity.Professor;
+import com.SistemaApiCrud.SistemaCrud.entity.casos_clinicos;
+import com.SistemaApiCrud.SistemaCrud.entity.enums.StatusCasoClinico;
+import com.SistemaApiCrud.SistemaCrud.entity.pergunta;
+import com.SistemaApiCrud.SistemaCrud.exception.BusinessException;
+import com.SistemaApiCrud.SistemaCrud.repository.aluno_repository;
+import com.SistemaApiCrud.SistemaCrud.repository.caso_clinico_repository;
+import com.SistemaApiCrud.SistemaCrud.repository.pergunta_repository;
+import com.SistemaApiCrud.SistemaCrud.repository.professor_repository;
+import com.SistemaApiCrud.SistemaCrud.service.resposta_aluno_service;
+
+@SpringBootTest
+class RespostaAlunoServiceTests {
+
+    @Autowired
+    private resposta_aluno_service respostaService;
+
+    @Autowired
+    private aluno_repository alunoRepository;
+
+    @Autowired
+    private professor_repository professorRepository;
+
+    @Autowired
+    private caso_clinico_repository casoRepository;
+
+    @Autowired
+    private pergunta_repository perguntaRepository;
+
+    @Test
+    void deveResponderCasoPublicadoECalcularResultado() {
+        Aluno aluno = alunoRepository.save(new Aluno(null, "Ana", "ana@email.com", "Medicina", "4"));
+        casos_clinicos caso = criarCaso(StatusCasoClinico.PUBLICADO);
+        pergunta pergunta = criarPergunta(caso, "A");
+
+        responder_caso_request_DTO request = new responder_caso_request_DTO(List.of(
+                new resposta_pergunta_request_DTO(pergunta.getId(), "A")));
+
+        resultado_caso_DTO resultado = respostaService.responderCaso(aluno.getIdAluno(), caso.getIdCaso(), request);
+
+        assertThat(resultado.getTotalRespondidas()).isEqualTo(1);
+        assertThat(resultado.getTotalCorretas()).isEqualTo(1);
+        assertThat(resultado.getNota()).isEqualTo(100.0);
+        assertThat(resultado.getRespostas()).hasSize(1);
+        assertThat(resultado.getRespostas().get(0).getCorreta()).isTrue();
+    }
+
+    @Test
+    void naoDeveResponderCasoNaoPublicado() {
+        Aluno aluno = alunoRepository.save(new Aluno(null, "Bruno", "bruno@email.com", "Medicina", "5"));
+        casos_clinicos caso = criarCaso(StatusCasoClinico.RASCUNHO);
+        pergunta pergunta = criarPergunta(caso, "B");
+
+        responder_caso_request_DTO request = new responder_caso_request_DTO(List.of(
+                new resposta_pergunta_request_DTO(pergunta.getId(), "B")));
+
+        assertThatThrownBy(() -> respostaService.responderCaso(aluno.getIdAluno(), caso.getIdCaso(), request))
+                .isInstanceOf(BusinessException.class)
+                .hasMessage("O caso clinico ainda nao esta publicado");
+    }
+
+    private casos_clinicos criarCaso(StatusCasoClinico status) {
+        Professor professor = professorRepository.save(new Professor(null, "Dr. Silva", "silva@email.com", "Clinica"));
+
+        casos_clinicos caso = new casos_clinicos();
+        caso.setProfessor(professor);
+        caso.setTitulo("Caso respiratorio");
+        caso.setDificuldade("MEDIA");
+        caso.setDisciplina("Clinica Medica");
+        caso.setAreaSaude("Medicina");
+        caso.setEstilo("Multipla escolha");
+        caso.setEspecialidade("Pneumologia");
+        caso.setStatus(status);
+
+        return casoRepository.save(caso);
+    }
+
+    private pergunta criarPergunta(casos_clinicos caso, String gabarito) {
+        pergunta pergunta = new pergunta();
+        pergunta.setCasoClinico(caso);
+        pergunta.setTexto("Qual a melhor conduta?");
+        pergunta.setAlternativaA("A");
+        pergunta.setAlternativaB("B");
+        pergunta.setAlternativaC("C");
+        pergunta.setAlternativaD("D");
+        pergunta.setAlternativaE("E");
+        pergunta.setResposta(gabarito);
+        pergunta.setTipo("MULTIPLA_ESCOLHA");
+        pergunta.setGabarito(gabarito);
+        pergunta.setTempoEsperado("5 minutos");
+
+        return perguntaRepository.save(pergunta);
+    }
+}
