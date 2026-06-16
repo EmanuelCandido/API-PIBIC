@@ -443,6 +443,7 @@ components:
           type: string
         tipo:
           type: string
+          enum: [MULTIPLA_ESCOLHA, DISCURSIVA, VERDADEIRO_FALSO, DIAGNOSTICO, CONDUTA_CLINICA]
           example: MULTIPLA_ESCOLHA
         gabarito:
           type: string

@@ -11,6 +11,7 @@ import com.SistemaApiCrud.SistemaCrud.DTO.alternativa_pergunta_DTO;
 import com.SistemaApiCrud.SistemaCrud.DTO.pergunta_DTO;
 import com.SistemaApiCrud.SistemaCrud.entity.AlternativaPergunta;
 import com.SistemaApiCrud.SistemaCrud.entity.casos_clinicos;
+import com.SistemaApiCrud.SistemaCrud.entity.enums.TipoPergunta;
 import com.SistemaApiCrud.SistemaCrud.entity.pergunta;
 import com.SistemaApiCrud.SistemaCrud.exception.BadRequestException;
 import com.SistemaApiCrud.SistemaCrud.exception.RecursoNaoEncontradoException;
@@ -143,7 +144,7 @@ public class pergunta_service {
     }
 
     private void validarPergunta(pergunta_DTO dto) {
-        if ("MULTIPLA_ESCOLHA".equalsIgnoreCase(dto.getTipo()) && montarAlternativasDTO(dto).isEmpty()) {
+        if (dto.getTipo() == TipoPergunta.MULTIPLA_ESCOLHA && montarAlternativasDTO(dto).isEmpty()) {
             throw new BadRequestException("Perguntas de multipla escolha precisam ter alternativas");
         }
     }

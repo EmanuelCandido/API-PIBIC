@@ -27,6 +27,7 @@ import com.SistemaApiCrud.SistemaCrud.entity.Usuario;
 import com.SistemaApiCrud.SistemaCrud.entity.casos_clinicos;
 import com.SistemaApiCrud.SistemaCrud.entity.enums.PapelUsuario;
 import com.SistemaApiCrud.SistemaCrud.entity.enums.StatusCasoClinico;
+import com.SistemaApiCrud.SistemaCrud.entity.enums.TipoPergunta;
 import com.SistemaApiCrud.SistemaCrud.entity.pergunta;
 import com.SistemaApiCrud.SistemaCrud.exception.BusinessException;
 import com.SistemaApiCrud.SistemaCrud.repository.alternativa_pergunta_repository;
@@ -223,7 +224,7 @@ class RespostaAlunoServiceTests {
         pergunta.setAlternativaD("D");
         pergunta.setAlternativaE("E");
         pergunta.setResposta(gabarito);
-        pergunta.setTipo("MULTIPLA_ESCOLHA");
+        pergunta.setTipo(TipoPergunta.MULTIPLA_ESCOLHA);
         pergunta.setGabarito(gabarito);
         pergunta.setTempoEsperado("5 minutos");
 

@@ -2,6 +2,8 @@ package com.SistemaApiCrud.SistemaCrud.DTO;
 
 import java.util.List;
 
+import com.SistemaApiCrud.SistemaCrud.entity.enums.TipoPergunta;
+
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -42,8 +44,8 @@ public class pergunta_DTO {
     @NotBlank(message = "A resposta e obrigatoria")
     private String resposta;
 
-    @NotBlank(message = "O tipo da pergunta e obrigatorio")
-    private String tipo;
+    @NotNull(message = "O tipo da pergunta e obrigatorio")
+    private TipoPergunta tipo;
 
     @NotBlank(message = "O gabarito e obrigatorio")
     private String gabarito;

@@ -37,6 +37,7 @@ $env:DB_URL="jdbc:postgresql://localhost:5432/CRUD_API"
 $env:DB_USER="postgres"
 $env:DB_PASSWORD="postgres"
 $env:JWT_SECRET="troque-por-uma-chave-grande-e-segura"
+$env:CORS_ALLOWED_ORIGINS="http://localhost:5173,http://localhost:3000"
 ```
 
 Execute:
@@ -89,7 +90,7 @@ Os testes usam H2 em memoria, configurado em `src/test/resources/application.pro
 
 - `status`: `RASCUNHO`, `PUBLICADO`, `ARQUIVADO`
 - `nivelDificuldade`: `FACIL`, `MEDIA`, `DIFICIL`
-- `tipo` da pergunta: `MULTIPLA_ESCOLHA`, `VERDADEIRO_FALSO`, `DISCURSIVA`
+- `tipo` da pergunta: `MULTIPLA_ESCOLHA`, `DISCURSIVA`, `VERDADEIRO_FALSO`, `DIAGNOSTICO`, `CONDUTA_CLINICA`
 - `sexo`: `MASCULINO`, `FEMININO`, `OUTRO`, `NAO_INFORMADO`
 - `estadoCivil`: `SOLTEIRO`, `CASADO`, `DIVORCIADO`, `VIUVO`, `SEPARADO`, `UNIAO_ESTAVEL`, `NAO_INFORMADO`
 
@@ -138,6 +139,9 @@ O arquivo principal usa variaveis de ambiente:
 - `ALUNO_USER` / `ALUNO_PASSWORD`
 - `JWT_SECRET`
 - `JWT_EXPIRATION_MINUTES`
+- `CORS_ALLOWED_ORIGINS`
+
+Por padrao, o CORS aceita front-ends locais em `http://localhost:3000`, `http://localhost:5173`, `http://127.0.0.1:3000` e `http://127.0.0.1:5173`.
 
 Veja `Sistema_Crud_API_PIBIC/src/main/resources/application-example.properties` para um exemplo sem senha real.
 

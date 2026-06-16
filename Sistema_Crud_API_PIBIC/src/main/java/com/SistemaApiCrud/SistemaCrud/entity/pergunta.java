@@ -1,6 +1,8 @@
 package com.SistemaApiCrud.SistemaCrud.entity;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -8,6 +10,9 @@ import jakarta.persistence.Column;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+
+import com.SistemaApiCrud.SistemaCrud.entity.enums.TipoPergunta;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -49,7 +54,8 @@ public class pergunta {
 	    
 	    private String resposta;
 
-	    private String tipo;
+	    @Enumerated(EnumType.STRING)
+	    private TipoPergunta tipo;
 
 	    private String gabarito;
 
