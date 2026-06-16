@@ -1,0 +1,306 @@
+openapi: 3.0.3
+info:
+  title: SistemaAPI PIBIC
+  version: 1.0.0
+  description: API REST para gerenciamento e resolucao de casos clinicos academicos.
+servers:
+  - url: http://localhost:8080
+security:
+  - basicAuth: []
+paths:
+  /alunos:
+    get:
+      summary: Lista alunos
+      responses:
+        "200":
+          description: Alunos encontrados
+    post:
+      summary: Cadastra aluno
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Aluno"
+      responses:
+        "201":
+          description: Aluno criado
+  /alunos/{id}:
+    get:
+      summary: Busca aluno por ID
+      parameters:
+        - $ref: "#/components/parameters/id"
+      responses:
+        "200":
+          description: Aluno encontrado
+        "404":
+          description: Aluno nao encontrado
+    put:
+      summary: Atualiza aluno
+      parameters:
+        - $ref: "#/components/parameters/id"
+      responses:
+        "200":
+          description: Aluno atualizado
+    delete:
+      summary: Remove aluno
+      parameters:
+        - $ref: "#/components/parameters/id"
+      responses:
+        "204":
+          description: Aluno removido
+  /alunos/{id}/casos-disponiveis:
+    get:
+      summary: Lista casos publicados disponiveis para o aluno
+      parameters:
+        - $ref: "#/components/parameters/id"
+      responses:
+        "200":
+          description: Casos publicados
+  /alunos/{id}/casos/{casoId}/completo:
+    get:
+      summary: Busca caso publicado completo para o aluno
+      parameters:
+        - $ref: "#/components/parameters/id"
+        - $ref: "#/components/parameters/casoId"
+      responses:
+        "200":
+          description: Caso completo publicado
+        "400":
+          description: Caso ainda nao publicado
+  /alunos/{id}/casos/{casoId}/responder:
+    post:
+      summary: Registra respostas de um aluno para um caso publicado
+      parameters:
+        - $ref: "#/components/parameters/id"
+        - $ref: "#/components/parameters/casoId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ResponderCasoRequest"
+      responses:
+        "201":
+          description: Resultado calculado
+  /alunos/{id}/historico:
+    get:
+      summary: Busca historico de respostas do aluno
+      parameters:
+        - $ref: "#/components/parameters/id"
+      responses:
+        "200":
+          description: Historico do aluno
+  /alunos/{id}/desempenho:
+    get:
+      summary: Busca desempenho consolidado do aluno
+      parameters:
+        - $ref: "#/components/parameters/id"
+      responses:
+        "200":
+          description: Desempenho do aluno
+  /professores:
+    get:
+      summary: Lista professores
+      responses:
+        "200":
+          description: Professores encontrados
+    post:
+      summary: Cadastra professor
+      responses:
+        "201":
+          description: Professor criado
+  /professores/{id}:
+    get:
+      summary: Busca professor por ID
+      parameters:
+        - $ref: "#/components/parameters/id"
+      responses:
+        "200":
+          description: Professor encontrado
+    put:
+      summary: Atualiza professor
+      parameters:
+        - $ref: "#/components/parameters/id"
+      responses:
+        "200":
+          description: Professor atualizado
+    delete:
+      summary: Remove professor
+      parameters:
+        - $ref: "#/components/parameters/id"
+      responses:
+        "204":
+          description: Professor removido
+  /professores/{id}/casos:
+    get:
+      summary: Lista casos de um professor
+      parameters:
+        - $ref: "#/components/parameters/id"
+      responses:
+        "200":
+          description: Casos do professor
+  /professores/{id}/relatorio-desempenho:
+    get:
+      summary: Gera relatorio de desempenho do professor
+      parameters:
+        - $ref: "#/components/parameters/id"
+      responses:
+        "200":
+          description: Relatorio gerado
+  /casos:
+    get:
+      summary: Lista casos clinicos
+      responses:
+        "200":
+          description: Casos encontrados
+    post:
+      summary: Cria caso clinico
+      responses:
+        "201":
+          description: Caso criado
+  /casos/{id}:
+    get:
+      summary: Busca caso por ID
+      parameters:
+        - $ref: "#/components/parameters/id"
+      responses:
+        "200":
+          description: Caso encontrado
+    put:
+      summary: Atualiza caso
+      parameters:
+        - $ref: "#/components/parameters/id"
+      responses:
+        "200":
+          description: Caso atualizado
+    delete:
+      summary: Remove caso
+      parameters:
+        - $ref: "#/components/parameters/id"
+      responses:
+        "204":
+          description: Caso removido
+  /casos/{id}/completo:
+    get:
+      summary: Busca caso completo com pacientes, conteudos e perguntas
+      parameters:
+        - $ref: "#/components/parameters/id"
+      responses:
+        "200":
+          description: Caso completo
+  /casos/{id}/publicar:
+    patch:
+      summary: Publica caso clinico
+      parameters:
+        - $ref: "#/components/parameters/id"
+      responses:
+        "200":
+          description: Caso publicado
+  /casos/{casoId}/perguntas:
+    get:
+      summary: Lista perguntas de um caso
+      parameters:
+        - $ref: "#/components/parameters/casoId"
+      responses:
+        "200":
+          description: Perguntas encontradas
+    post:
+      summary: Cria pergunta vinculada ao caso
+      parameters:
+        - $ref: "#/components/parameters/casoId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Pergunta"
+      responses:
+        "201":
+          description: Pergunta criada
+components:
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic
+  parameters:
+    id:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int64
+        minimum: 1
+    casoId:
+      name: casoId
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int64
+        minimum: 1
+  schemas:
+    Aluno:
+      type: object
+      properties:
+        idAluno:
+          type: integer
+          format: int64
+        nome:
+          type: string
+        email:
+          type: string
+        curso:
+          type: string
+        periodo:
+          type: string
+    AlternativaPergunta:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        letra:
+          type: string
+        texto:
+          type: string
+        correta:
+          type: boolean
+    Pergunta:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        idCaso:
+          type: integer
+          format: int64
+        texto:
+          type: string
+        tipo:
+          type: string
+          example: MULTIPLA_ESCOLHA
+        gabarito:
+          type: string
+        resposta:
+          type: string
+        tempoEsperado:
+          type: string
+        alternativas:
+          type: array
+          items:
+            $ref: "#/components/schemas/AlternativaPergunta"
+    ResponderCasoRequest:
+      type: object
+      properties:
+        respostas:
+          type: array
+          items:
+            type: object
+            properties:
+              idPergunta:
+                type: integer
+                format: int64
+              respostaMarcada:
+                type: string

@@ -36,13 +36,15 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(HttpMethod.GET, "/casos/**").hasAnyRole("ADMIN", "PROFESSOR", "ALUNO")
+                        .requestMatchers(HttpMethod.GET, "/openapi.yaml").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/casos/**").hasAnyRole("ADMIN", "PROFESSOR")
                         .requestMatchers(HttpMethod.POST, "/casos/**").hasAnyRole("ADMIN", "PROFESSOR")
                         .requestMatchers(HttpMethod.PUT, "/casos/**").hasAnyRole("ADMIN", "PROFESSOR")
                         .requestMatchers(HttpMethod.PATCH, "/casos/**").hasAnyRole("ADMIN", "PROFESSOR")
                         .requestMatchers(HttpMethod.DELETE, "/casos/**").hasAnyRole("ADMIN", "PROFESSOR")
                         .requestMatchers("/perguntas/**").hasAnyRole("ADMIN", "PROFESSOR")
                         .requestMatchers(HttpMethod.POST, "/alunos/*/casos/*/responder").hasAnyRole("ADMIN", "ALUNO")
+                        .requestMatchers(HttpMethod.GET, "/alunos/*/casos/*/completo").hasAnyRole("ADMIN", "ALUNO")
                         .requestMatchers(HttpMethod.GET, "/alunos/*/casos-disponiveis").hasAnyRole("ADMIN", "ALUNO")
                         .requestMatchers(HttpMethod.GET, "/alunos/*/historico").hasAnyRole("ADMIN", "ALUNO")
                         .requestMatchers(HttpMethod.GET, "/alunos/*/desempenho").hasAnyRole("ADMIN", "ALUNO")

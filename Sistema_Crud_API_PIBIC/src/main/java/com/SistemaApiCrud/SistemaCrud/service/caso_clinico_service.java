@@ -19,6 +19,7 @@ import com.SistemaApiCrud.SistemaCrud.entity.conteudo_clinico;
 import com.SistemaApiCrud.SistemaCrud.entity.enums.StatusCasoClinico;
 import com.SistemaApiCrud.SistemaCrud.entity.paciente;
 import com.SistemaApiCrud.SistemaCrud.entity.pergunta;
+import com.SistemaApiCrud.SistemaCrud.exception.BusinessException;
 import com.SistemaApiCrud.SistemaCrud.exception.RecursoNaoEncontradoException;
 import com.SistemaApiCrud.SistemaCrud.repository.alternativa_pergunta_repository;
 import com.SistemaApiCrud.SistemaCrud.repository.caso_clinico_repository;
@@ -79,6 +80,20 @@ public class caso_clinico_service {
 
     public caso_clinico_completo_DTO buscarCompletoPorId(Long id) {
         casos_clinicos caso = buscarEntityPorId(id);
+        return montarCompleto(caso);
+    }
+
+    public caso_clinico_completo_DTO buscarCompletoPublicadoPorId(Long id) {
+        casos_clinicos caso = buscarEntityPorId(id);
+        if (caso.getStatus() != StatusCasoClinico.PUBLICADO) {
+            throw new BusinessException("O caso clinico ainda nao esta publicado");
+        }
+
+        return montarCompleto(caso);
+    }
+
+    private caso_clinico_completo_DTO montarCompleto(casos_clinicos caso) {
+        Long id = caso.getIdCaso();
 
         List<paciente_DTO> pacientes = pacienteRepository.findByCasoClinicoIdCaso(id)
                 .stream()

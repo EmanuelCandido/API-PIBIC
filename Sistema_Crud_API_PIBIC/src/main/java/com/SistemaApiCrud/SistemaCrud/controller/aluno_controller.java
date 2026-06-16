@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.SistemaApiCrud.SistemaCrud.DTO.aluno_DTO;
+import com.SistemaApiCrud.SistemaCrud.DTO.caso_clinico_completo_DTO;
 import com.SistemaApiCrud.SistemaCrud.DTO.casos_clinicos_DTO;
 import com.SistemaApiCrud.SistemaCrud.DTO.desempenho_aluno_DTO;
 import com.SistemaApiCrud.SistemaCrud.DTO.historico_aluno_DTO;
@@ -56,6 +57,14 @@ public class aluno_controller {
     public List<casos_clinicos_DTO> listarCasosDisponiveis(@PathVariable @Min(1) Long id) {
         service.buscarPorId(id);
         return casoService.listarPublicados();
+    }
+
+    @GetMapping("/{id}/casos/{casoId}/completo")
+    public ResponseEntity<caso_clinico_completo_DTO> buscarCasoDisponivelCompleto(
+            @PathVariable @Min(1) Long id,
+            @PathVariable @Min(1) Long casoId) {
+        service.buscarPorId(id);
+        return ResponseEntity.ok(casoService.buscarCompletoPublicadoPorId(casoId));
     }
 
     @GetMapping("/{id}/historico")

@@ -12,16 +12,19 @@ import org.springframework.boot.test.context.SpringBootTest;
 import com.SistemaApiCrud.SistemaCrud.DTO.responder_caso_request_DTO;
 import com.SistemaApiCrud.SistemaCrud.DTO.resposta_pergunta_request_DTO;
 import com.SistemaApiCrud.SistemaCrud.DTO.resultado_caso_DTO;
+import com.SistemaApiCrud.SistemaCrud.entity.AlternativaPergunta;
 import com.SistemaApiCrud.SistemaCrud.entity.Aluno;
 import com.SistemaApiCrud.SistemaCrud.entity.Professor;
 import com.SistemaApiCrud.SistemaCrud.entity.casos_clinicos;
 import com.SistemaApiCrud.SistemaCrud.entity.enums.StatusCasoClinico;
 import com.SistemaApiCrud.SistemaCrud.entity.pergunta;
 import com.SistemaApiCrud.SistemaCrud.exception.BusinessException;
+import com.SistemaApiCrud.SistemaCrud.repository.alternativa_pergunta_repository;
 import com.SistemaApiCrud.SistemaCrud.repository.aluno_repository;
 import com.SistemaApiCrud.SistemaCrud.repository.caso_clinico_repository;
 import com.SistemaApiCrud.SistemaCrud.repository.pergunta_repository;
 import com.SistemaApiCrud.SistemaCrud.repository.professor_repository;
+import com.SistemaApiCrud.SistemaCrud.service.caso_clinico_service;
 import com.SistemaApiCrud.SistemaCrud.service.resposta_aluno_service;
 
 @SpringBootTest
@@ -29,6 +32,9 @@ class RespostaAlunoServiceTests {
 
     @Autowired
     private resposta_aluno_service respostaService;
+
+    @Autowired
+    private caso_clinico_service casoService;
 
     @Autowired
     private aluno_repository alunoRepository;
@@ -41,6 +47,9 @@ class RespostaAlunoServiceTests {
 
     @Autowired
     private pergunta_repository perguntaRepository;
+
+    @Autowired
+    private alternativa_pergunta_repository alternativaRepository;
 
     @Test
     void deveResponderCasoPublicadoECalcularResultado() {
@@ -70,6 +79,34 @@ class RespostaAlunoServiceTests {
                 new resposta_pergunta_request_DTO(pergunta.getId(), "B")));
 
         assertThatThrownBy(() -> respostaService.responderCaso(aluno.getIdAluno(), caso.getIdCaso(), request))
+                .isInstanceOf(BusinessException.class)
+                .hasMessage("O caso clinico ainda nao esta publicado");
+    }
+
+    @Test
+    void deveCorrigirRespostaUsandoAlternativasSeparadas() {
+        Aluno aluno = alunoRepository.save(new Aluno(null, "Clara", "clara@email.com", "Medicina", "6"));
+        casos_clinicos caso = criarCaso(StatusCasoClinico.PUBLICADO);
+        pergunta pergunta = criarPergunta(caso, "A");
+
+        alternativaRepository.saveAll(List.of(
+                new AlternativaPergunta(null, pergunta, "A", "Conduta antiga", false),
+                new AlternativaPergunta(null, pergunta, "B", "Conduta correta", true)));
+
+        responder_caso_request_DTO request = new responder_caso_request_DTO(List.of(
+                new resposta_pergunta_request_DTO(pergunta.getId(), "Conduta correta")));
+
+        resultado_caso_DTO resultado = respostaService.responderCaso(aluno.getIdAluno(), caso.getIdCaso(), request);
+
+        assertThat(resultado.getTotalCorretas()).isEqualTo(1);
+        assertThat(resultado.getRespostas().get(0).getCorreta()).isTrue();
+    }
+
+    @Test
+    void naoDeveExibirCasoCompletoNaoPublicadoParaAluno() {
+        casos_clinicos caso = criarCaso(StatusCasoClinico.RASCUNHO);
+
+        assertThatThrownBy(() -> casoService.buscarCompletoPublicadoPorId(caso.getIdCaso()))
                 .isInstanceOf(BusinessException.class)
                 .hasMessage("O caso clinico ainda nao esta publicado");
     }

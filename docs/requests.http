@@ -1,0 +1,97 @@
+@baseUrl = http://localhost:8080
+@adminUser = admin
+@adminPass = admin123
+@professorUser = professor
+@professorPass = professor123
+@alunoUser = aluno
+@alunoPass = aluno123
+
+### OpenAPI
+GET {{baseUrl}}/openapi.yaml
+
+### Criar professor
+POST {{baseUrl}}/professores
+Authorization: Basic {{adminUser}} {{adminPass}}
+Content-Type: application/json
+
+{
+  "nome": "Dra. Silva",
+  "email": "silva@email.com",
+  "materia": "Clinica Medica"
+}
+
+### Criar aluno
+POST {{baseUrl}}/alunos
+Authorization: Basic {{adminUser}} {{adminPass}}
+Content-Type: application/json
+
+{
+  "nome": "Ana",
+  "email": "ana@email.com",
+  "curso": "Medicina",
+  "periodo": "4"
+}
+
+### Criar caso clinico
+POST {{baseUrl}}/casos
+Authorization: Basic {{professorUser}} {{professorPass}}
+Content-Type: application/json
+
+{
+  "idProfessor": 1,
+  "titulo": "Caso respiratorio",
+  "dificuldade": "MEDIA",
+  "disciplina": "Clinica Medica",
+  "areaSaude": "Medicina",
+  "estilo": "Multipla escolha",
+  "especialidade": "Pneumologia",
+  "objetivoAprendizagem": "Avaliar conduta inicial",
+  "nivelDificuldade": "MEDIA"
+}
+
+### Criar pergunta com alternativas flexiveis
+POST {{baseUrl}}/casos/1/perguntas
+Authorization: Basic {{professorUser}} {{professorPass}}
+Content-Type: application/json
+
+{
+  "texto": "Qual a melhor conduta inicial?",
+  "tipo": "MULTIPLA_ESCOLHA",
+  "gabarito": "A",
+  "resposta": "A",
+  "tempoEsperado": "5 minutos",
+  "alternativas": [
+    { "letra": "A", "texto": "Conduta correta", "correta": true },
+    { "letra": "B", "texto": "Conduta inadequada", "correta": false }
+  ]
+}
+
+### Publicar caso
+PATCH {{baseUrl}}/casos/1/publicar
+Authorization: Basic {{professorUser}} {{professorPass}}
+
+### Listar casos disponiveis para aluno
+GET {{baseUrl}}/alunos/1/casos-disponiveis
+Authorization: Basic {{alunoUser}} {{alunoPass}}
+
+### Ver caso publicado completo como aluno
+GET {{baseUrl}}/alunos/1/casos/1/completo
+Authorization: Basic {{alunoUser}} {{alunoPass}}
+
+### Responder caso
+POST {{baseUrl}}/alunos/1/casos/1/responder
+Authorization: Basic {{alunoUser}} {{alunoPass}}
+Content-Type: application/json
+
+{
+  "respostas": [
+    {
+      "idPergunta": 1,
+      "respostaMarcada": "A"
+    }
+  ]
+}
+
+### Desempenho do aluno
+GET {{baseUrl}}/alunos/1/desempenho
+Authorization: Basic {{alunoUser}} {{alunoPass}}

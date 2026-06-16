@@ -12,6 +12,7 @@ import com.SistemaApiCrud.SistemaCrud.DTO.responder_caso_request_DTO;
 import com.SistemaApiCrud.SistemaCrud.DTO.resposta_aluno_DTO;
 import com.SistemaApiCrud.SistemaCrud.DTO.resposta_pergunta_request_DTO;
 import com.SistemaApiCrud.SistemaCrud.DTO.resultado_caso_DTO;
+import com.SistemaApiCrud.SistemaCrud.entity.AlternativaPergunta;
 import com.SistemaApiCrud.SistemaCrud.entity.Aluno;
 import com.SistemaApiCrud.SistemaCrud.entity.RespostaAluno;
 import com.SistemaApiCrud.SistemaCrud.entity.casos_clinicos;
@@ -20,6 +21,7 @@ import com.SistemaApiCrud.SistemaCrud.entity.pergunta;
 import com.SistemaApiCrud.SistemaCrud.exception.BadRequestException;
 import com.SistemaApiCrud.SistemaCrud.exception.BusinessException;
 import com.SistemaApiCrud.SistemaCrud.exception.RecursoNaoEncontradoException;
+import com.SistemaApiCrud.SistemaCrud.repository.alternativa_pergunta_repository;
 import com.SistemaApiCrud.SistemaCrud.repository.aluno_repository;
 import com.SistemaApiCrud.SistemaCrud.repository.caso_clinico_repository;
 import com.SistemaApiCrud.SistemaCrud.repository.pergunta_repository;
@@ -40,6 +42,9 @@ public class resposta_aluno_service {
 
     @Autowired
     private pergunta_repository perguntaRepository;
+
+    @Autowired
+    private alternativa_pergunta_repository alternativaRepository;
 
     @Autowired
     private professor_repository professorRepository;
@@ -120,13 +125,33 @@ public class resposta_aluno_service {
     }
 
     private boolean compararResposta(pergunta pergunta, String respostaMarcada) {
+        List<AlternativaPergunta> alternativas = alternativaRepository.findByPerguntaIdOrderByLetra(pergunta.getId());
+        if (!alternativas.isEmpty()) {
+            return alternativas.stream()
+                    .anyMatch(alternativa -> Boolean.TRUE.equals(alternativa.getCorreta())
+                            && correspondeResposta(alternativa, respostaMarcada));
+        }
+
         String gabarito = pergunta.getGabarito();
 
         if (gabarito == null || gabarito.isBlank()) {
             gabarito = pergunta.getResposta();
         }
 
-        return gabarito != null && gabarito.trim().equalsIgnoreCase(respostaMarcada.trim());
+        return gabarito != null && respostaMarcada != null && gabarito.trim().equalsIgnoreCase(respostaMarcada.trim());
+    }
+
+    private boolean correspondeResposta(AlternativaPergunta alternativa, String respostaMarcada) {
+        if (respostaMarcada == null) {
+            return false;
+        }
+
+        String resposta = respostaMarcada.trim();
+        return corresponde(resposta, alternativa.getLetra()) || corresponde(resposta, alternativa.getTexto());
+    }
+
+    private boolean corresponde(String valor, String referencia) {
+        return valor != null && referencia != null && valor.equalsIgnoreCase(referencia.trim());
     }
 
     private resultado_caso_DTO montarResultado(Long idAluno, Long idCaso, List<RespostaAluno> respostas) {
