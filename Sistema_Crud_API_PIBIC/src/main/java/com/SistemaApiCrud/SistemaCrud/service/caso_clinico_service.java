@@ -1,15 +1,18 @@
 package com.SistemaApiCrud.SistemaCrud.service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.SistemaApiCrud.SistemaCrud.DTO.alternativa_pergunta_DTO;
 import com.SistemaApiCrud.SistemaCrud.DTO.caso_clinico_completo_DTO;
 import com.SistemaApiCrud.SistemaCrud.DTO.casos_clinicos_DTO;
 import com.SistemaApiCrud.SistemaCrud.DTO.conteudo_clinico_DTO;
 import com.SistemaApiCrud.SistemaCrud.DTO.paciente_DTO;
 import com.SistemaApiCrud.SistemaCrud.DTO.pergunta_DTO;
+import com.SistemaApiCrud.SistemaCrud.entity.AlternativaPergunta;
 import com.SistemaApiCrud.SistemaCrud.entity.Professor;
 import com.SistemaApiCrud.SistemaCrud.entity.casos_clinicos;
 import com.SistemaApiCrud.SistemaCrud.entity.conteudo_clinico;
@@ -17,6 +20,7 @@ import com.SistemaApiCrud.SistemaCrud.entity.enums.StatusCasoClinico;
 import com.SistemaApiCrud.SistemaCrud.entity.paciente;
 import com.SistemaApiCrud.SistemaCrud.entity.pergunta;
 import com.SistemaApiCrud.SistemaCrud.exception.RecursoNaoEncontradoException;
+import com.SistemaApiCrud.SistemaCrud.repository.alternativa_pergunta_repository;
 import com.SistemaApiCrud.SistemaCrud.repository.caso_clinico_repository;
 import com.SistemaApiCrud.SistemaCrud.repository.conteudo_clinico_repository;
 import com.SistemaApiCrud.SistemaCrud.repository.paciente_repository;
@@ -40,6 +44,9 @@ public class caso_clinico_service {
 
     @Autowired
     private pergunta_repository perguntaRepository;
+
+    @Autowired
+    private alternativa_pergunta_repository alternativaRepository;
 
     public List<casos_clinicos_DTO> listar() {
         return repository.findAll()
@@ -212,7 +219,58 @@ public class caso_clinico_service {
         dto.setTipo(pergunta.getTipo());
         dto.setGabarito(pergunta.getGabarito());
         dto.setTempoEsperado(pergunta.getTempoEsperado());
+        dto.setAlternativas(buscarAlternativasDTO(pergunta));
         return dto;
+    }
+
+    private List<alternativa_pergunta_DTO> buscarAlternativasDTO(pergunta pergunta) {
+        List<alternativa_pergunta_DTO> alternativas = alternativaRepository.findByPerguntaIdOrderByLetra(pergunta.getId())
+                .stream()
+                .map(this::paraAlternativaDTO)
+                .toList();
+
+        if (!alternativas.isEmpty()) {
+            return alternativas;
+        }
+
+        return montarAlternativasLegadas(pergunta);
+    }
+
+    private alternativa_pergunta_DTO paraAlternativaDTO(AlternativaPergunta alternativa) {
+        return new alternativa_pergunta_DTO(
+                alternativa.getId(),
+                alternativa.getLetra(),
+                alternativa.getTexto(),
+                alternativa.getCorreta());
+    }
+
+    private List<alternativa_pergunta_DTO> montarAlternativasLegadas(pergunta pergunta) {
+        List<alternativa_pergunta_DTO> alternativas = new ArrayList<>();
+
+        adicionarAlternativaLegada(alternativas, "A", pergunta.getAlternativaA(), pergunta);
+        adicionarAlternativaLegada(alternativas, "B", pergunta.getAlternativaB(), pergunta);
+        adicionarAlternativaLegada(alternativas, "C", pergunta.getAlternativaC(), pergunta);
+        adicionarAlternativaLegada(alternativas, "D", pergunta.getAlternativaD(), pergunta);
+        adicionarAlternativaLegada(alternativas, "E", pergunta.getAlternativaE(), pergunta);
+
+        return alternativas;
+    }
+
+    private void adicionarAlternativaLegada(
+            List<alternativa_pergunta_DTO> alternativas,
+            String letra,
+            String texto,
+            pergunta pergunta) {
+        if (texto == null || texto.isBlank()) {
+            return;
+        }
+
+        boolean correta = corresponde(letra, pergunta.getGabarito()) || corresponde(letra, pergunta.getResposta());
+        alternativas.add(new alternativa_pergunta_DTO(null, letra, texto, correta));
+    }
+
+    private boolean corresponde(String valor, String referencia) {
+        return valor != null && referencia != null && valor.trim().equalsIgnoreCase(referencia.trim());
     }
 
     private casos_clinicos buscarEntityPorId(Long id) {

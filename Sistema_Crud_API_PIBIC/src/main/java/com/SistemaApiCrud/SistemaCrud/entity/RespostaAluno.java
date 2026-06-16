@@ -2,6 +2,7 @@ package com.SistemaApiCrud.SistemaCrud.entity;
 
 import java.time.LocalDateTime;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -39,10 +40,12 @@ public class RespostaAluno {
     @JoinColumn(name = "fk_id_pergunta")
     private pergunta pergunta;
 
+    @Column(name = "resposta_marcada")
     private String respostaMarcada;
 
     private Boolean correta;
 
+    @Column(name = "data_resposta")
     private LocalDateTime dataResposta;
 
     @PrePersist

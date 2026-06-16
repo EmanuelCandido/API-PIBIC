@@ -1,5 +1,8 @@
 package com.SistemaApiCrud.SistemaCrud.DTO;
 
+import java.util.List;
+
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -23,20 +26,18 @@ public class pergunta_DTO {
     @NotBlank(message = "Pergunta vazia")
     private String texto;
 
-    @NotBlank(message = "A alternativa A e obrigatoria")
     private String alternativaA;
 
-    @NotBlank(message = "A alternativa B e obrigatoria")
     private String alternativaB;
 
-    @NotBlank(message = "A alternativa C e obrigatoria")
     private String alternativaC;
 
-    @NotBlank(message = "A alternativa D e obrigatoria")
     private String alternativaD;
 
-    @NotBlank(message = "A alternativa E e obrigatoria")
     private String alternativaE;
+
+    @Valid
+    private List<alternativa_pergunta_DTO> alternativas;
 
     @NotBlank(message = "A resposta e obrigatoria")
     private String resposta;

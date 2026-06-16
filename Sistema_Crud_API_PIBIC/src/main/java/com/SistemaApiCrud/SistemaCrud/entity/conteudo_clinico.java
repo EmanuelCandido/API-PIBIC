@@ -4,6 +4,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Column;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
@@ -23,6 +24,7 @@ public class conteudo_clinico {
 
 	@Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id_conteudo")
     private Long idConteudo;
 
     @ManyToOne
@@ -33,10 +35,13 @@ public class conteudo_clinico {
 
     private String contexto;
 
+    @Column(name = "exam_clinico")
     private String examClinico;
 
+    @Column(name = "antec_clinico")
     private String antecClinico;
 
+    @Column(name = "diag_esperado")
     private String diagEsperado;
 	
 	

@@ -4,6 +4,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Column;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
@@ -31,14 +32,19 @@ public class pergunta {
 
 	    private String texto;
 
+	    @Column(name = "alternativa_a")
 	    private String alternativaA;
 
+	    @Column(name = "alternativa_b")
 	    private String alternativaB;
 
+	    @Column(name = "alternativa_c")
 	    private String alternativaC;
 
+	    @Column(name = "alternativa_d")
 	    private String alternativaD;
 
+	    @Column(name = "alternativa_e")
 	    private String alternativaE;
 	    
 	    private String resposta;
@@ -47,6 +53,7 @@ public class pergunta {
 
 	    private String gabarito;
 
+	    @Column(name = "tempo_esperado")
 	    private String tempoEsperado;
 	    
 	    

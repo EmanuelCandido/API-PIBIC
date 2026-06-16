@@ -32,6 +32,7 @@ public class casos_clinicos {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id_caso")
     private Long idCaso;
 
     @ManyToOne
@@ -44,6 +45,7 @@ public class casos_clinicos {
 
     private String disciplina;
 
+    @Column(name = "area_saude")
     private String areaSaude;
 
     private String estilo;
@@ -53,14 +55,17 @@ public class casos_clinicos {
     @Enumerated(EnumType.STRING)
     private StatusCasoClinico status;
 
-    @Column(updatable = false)
+    @Column(name = "data_criacao", updatable = false)
     private LocalDateTime dataCriacao;
 
+    @Column(name = "data_atualizacao")
     private LocalDateTime dataAtualizacao;
 
+    @Column(name = "objetivo_aprendizagem")
     private String objetivoAprendizagem;
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "nivel_dificuldade")
     private NivelDificuldade nivelDificuldade;
 
     @PrePersist
