@@ -4,6 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import com.SistemaApiCrud.SistemaCrud.DTO.alternativa_pergunta_DTO;
@@ -27,6 +30,8 @@ import com.SistemaApiCrud.SistemaCrud.repository.conteudo_clinico_repository;
 import com.SistemaApiCrud.SistemaCrud.repository.paciente_repository;
 import com.SistemaApiCrud.SistemaCrud.repository.pergunta_repository;
 import com.SistemaApiCrud.SistemaCrud.repository.professor_repository;
+
+import jakarta.persistence.criteria.Predicate;
 
 @Service
 public class caso_clinico_service {
@@ -54,6 +59,19 @@ public class caso_clinico_service {
                 .stream()
                 .map(this::paraDTO)
                 .toList();
+    }
+
+    public Page<casos_clinicos_DTO> listarPaginado(
+            StatusCasoClinico status,
+            Long idProfessor,
+            String termo,
+            Pageable pageable) {
+        if (idProfessor != null && !professorRepository.existsById(idProfessor)) {
+            throw new RecursoNaoEncontradoException("Professor nao encontrado");
+        }
+
+        return repository.findAll(filtrarCasos(status, idProfessor, termo), pageable)
+                .map(this::paraDTO);
     }
 
     public List<casos_clinicos_DTO> listarPublicados() {
@@ -286,6 +304,34 @@ public class caso_clinico_service {
 
     private boolean corresponde(String valor, String referencia) {
         return valor != null && referencia != null && valor.trim().equalsIgnoreCase(referencia.trim());
+    }
+
+    private Specification<casos_clinicos> filtrarCasos(
+            StatusCasoClinico status,
+            Long idProfessor,
+            String termo) {
+        return (root, query, criteriaBuilder) -> {
+            List<Predicate> predicates = new ArrayList<>();
+
+            if (status != null) {
+                predicates.add(criteriaBuilder.equal(root.get("status"), status));
+            }
+
+            if (idProfessor != null) {
+                predicates.add(criteriaBuilder.equal(root.get("professor").get("id"), idProfessor));
+            }
+
+            if (termo != null && !termo.isBlank()) {
+                String termoNormalizado = "%" + termo.trim().toLowerCase() + "%";
+                predicates.add(criteriaBuilder.or(
+                        criteriaBuilder.like(criteriaBuilder.lower(root.get("titulo")), termoNormalizado),
+                        criteriaBuilder.like(criteriaBuilder.lower(root.get("disciplina")), termoNormalizado),
+                        criteriaBuilder.like(criteriaBuilder.lower(root.get("areaSaude")), termoNormalizado),
+                        criteriaBuilder.like(criteriaBuilder.lower(root.get("especialidade")), termoNormalizado)));
+            }
+
+            return criteriaBuilder.and(predicates.toArray(Predicate[]::new));
+        };
     }
 
     private casos_clinicos buscarEntityPorId(Long id) {

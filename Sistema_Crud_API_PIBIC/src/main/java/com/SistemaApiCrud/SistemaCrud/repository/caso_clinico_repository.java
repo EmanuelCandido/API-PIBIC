@@ -3,11 +3,12 @@ package com.SistemaApiCrud.SistemaCrud.repository;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
 import com.SistemaApiCrud.SistemaCrud.entity.casos_clinicos;
 import com.SistemaApiCrud.SistemaCrud.entity.enums.StatusCasoClinico;
 
-public interface caso_clinico_repository extends JpaRepository<casos_clinicos, Long> {
+public interface caso_clinico_repository extends JpaRepository<casos_clinicos, Long>, JpaSpecificationExecutor<casos_clinicos> {
 
     List<casos_clinicos> findByProfessorId(Long idProfessor);
 

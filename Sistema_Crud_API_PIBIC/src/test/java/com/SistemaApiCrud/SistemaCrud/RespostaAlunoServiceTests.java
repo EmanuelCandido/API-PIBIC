@@ -8,14 +8,24 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.SistemaApiCrud.SistemaCrud.DTO.responder_caso_request_DTO;
+import com.SistemaApiCrud.SistemaCrud.DTO.casos_clinicos_DTO;
 import com.SistemaApiCrud.SistemaCrud.DTO.resposta_pergunta_request_DTO;
 import com.SistemaApiCrud.SistemaCrud.DTO.resultado_caso_DTO;
 import com.SistemaApiCrud.SistemaCrud.entity.AlternativaPergunta;
 import com.SistemaApiCrud.SistemaCrud.entity.Aluno;
 import com.SistemaApiCrud.SistemaCrud.entity.Professor;
+import com.SistemaApiCrud.SistemaCrud.entity.Usuario;
 import com.SistemaApiCrud.SistemaCrud.entity.casos_clinicos;
+import com.SistemaApiCrud.SistemaCrud.entity.enums.PapelUsuario;
 import com.SistemaApiCrud.SistemaCrud.entity.enums.StatusCasoClinico;
 import com.SistemaApiCrud.SistemaCrud.entity.pergunta;
 import com.SistemaApiCrud.SistemaCrud.exception.BusinessException;
@@ -24,7 +34,9 @@ import com.SistemaApiCrud.SistemaCrud.repository.aluno_repository;
 import com.SistemaApiCrud.SistemaCrud.repository.caso_clinico_repository;
 import com.SistemaApiCrud.SistemaCrud.repository.pergunta_repository;
 import com.SistemaApiCrud.SistemaCrud.repository.professor_repository;
+import com.SistemaApiCrud.SistemaCrud.repository.usuario_repository;
 import com.SistemaApiCrud.SistemaCrud.service.caso_clinico_service;
+import com.SistemaApiCrud.SistemaCrud.service.JwtService;
 import com.SistemaApiCrud.SistemaCrud.service.resposta_aluno_service;
 
 @SpringBootTest
@@ -32,6 +44,15 @@ class RespostaAlunoServiceTests {
 
     @Autowired
     private resposta_aluno_service respostaService;
+
+    @Autowired
+    private JwtService jwtService;
+
+    @Autowired
+    private AuthenticationManager authenticationManager;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     @Autowired
     private caso_clinico_service casoService;
@@ -50,6 +71,9 @@ class RespostaAlunoServiceTests {
 
     @Autowired
     private alternativa_pergunta_repository alternativaRepository;
+
+    @Autowired
+    private usuario_repository usuarioRepository;
 
     @Test
     void deveResponderCasoPublicadoECalcularResultado() {
@@ -109,6 +133,68 @@ class RespostaAlunoServiceTests {
         assertThatThrownBy(() -> casoService.buscarCompletoPublicadoPorId(caso.getIdCaso()))
                 .isInstanceOf(BusinessException.class)
                 .hasMessage("O caso clinico ainda nao esta publicado");
+    }
+
+    @Test
+    void deveListarCasosPaginadosComFiltros() {
+        casos_clinicos casoPublicado = criarCaso(StatusCasoClinico.PUBLICADO);
+        criarCaso(StatusCasoClinico.RASCUNHO);
+
+        Page<casos_clinicos_DTO> pagina = casoService.listarPaginado(
+                StatusCasoClinico.PUBLICADO,
+                casoPublicado.getProfessor().getId(),
+                "respiratorio",
+                PageRequest.of(0, 10));
+
+        assertThat(pagina.getTotalElements()).isEqualTo(1);
+        assertThat(pagina.getContent().get(0).getIdCaso()).isEqualTo(casoPublicado.getIdCaso());
+    }
+
+    @Test
+    void deveGerarTokenJwtValidoComRoles() {
+        var authentication = new UsernamePasswordAuthenticationToken(
+                "admin",
+                null,
+                List.of(new SimpleGrantedAuthority("ROLE_ADMIN")));
+
+        String token = jwtService.gerarToken(authentication);
+
+        assertThat(token.split("\\.")).hasSize(3);
+        assertThat(jwtService.isTokenValido(token)).isTrue();
+        assertThat(jwtService.criarAuthentication(token).getAuthorities())
+                .extracting(GrantedAuthority::getAuthority)
+                .containsExactly("ROLE_ADMIN");
+    }
+
+    @Test
+    void deveAutenticarUsuarioDoBancoComSenhaBCrypt() {
+        Usuario usuario = usuarioRepository.findByUsername("admin").orElseThrow();
+
+        assertThat(usuario.getSenha()).isNotEqualTo("admin123");
+        assertThat(passwordEncoder.matches("admin123", usuario.getSenha())).isTrue();
+
+        var authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken("admin", "admin123"));
+
+        assertThat(authentication.isAuthenticated()).isTrue();
+        assertThat(authentication.getAuthorities())
+                .extracting(GrantedAuthority::getAuthority)
+                .contains("ROLE_ADMIN");
+    }
+
+    @Test
+    void deveSalvarUsuarioComRoleESenhaCriptografada() {
+        Usuario usuario = new Usuario();
+        usuario.setUsername("novo-admin");
+        usuario.setSenha(passwordEncoder.encode("senha123"));
+        usuario.setRole(PapelUsuario.ADMIN);
+        usuario.setAtivo(true);
+
+        Usuario usuarioSalvo = usuarioRepository.save(usuario);
+
+        assertThat(usuarioSalvo.getRole()).isEqualTo(PapelUsuario.ADMIN);
+        assertThat(usuarioSalvo.getSenha()).isNotEqualTo("senha123");
+        assertThat(passwordEncoder.matches("senha123", usuarioSalvo.getSenha())).isTrue();
     }
 
     private casos_clinicos criarCaso(StatusCasoClinico status) {

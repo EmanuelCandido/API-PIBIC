@@ -6,8 +6,27 @@ info:
 servers:
   - url: http://localhost:8080
 security:
-  - basicAuth: []
+  - bearerAuth: []
 paths:
+  /auth/login:
+    post:
+      summary: Autentica usuario e retorna token JWT
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+      responses:
+        "200":
+          description: Token JWT gerado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginResponse"
+        "401":
+          description: Credenciais invalidas
   /alunos:
     get:
       summary: Lista alunos
@@ -25,6 +44,66 @@ paths:
       responses:
         "201":
           description: Aluno criado
+  /usuarios:
+    get:
+      summary: Lista usuarios de acesso
+      responses:
+        "200":
+          description: Usuarios encontrados
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/UsuarioResponse"
+    post:
+      summary: Cadastra usuario com senha BCrypt e role
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UsuarioRequest"
+      responses:
+        "201":
+          description: Usuario criado
+  /usuarios/{id}:
+    get:
+      summary: Busca usuario por ID
+      parameters:
+        - $ref: "#/components/parameters/id"
+      responses:
+        "200":
+          description: Usuario encontrado
+    put:
+      summary: Atualiza usuario, senha e role
+      parameters:
+        - $ref: "#/components/parameters/id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UsuarioRequest"
+      responses:
+        "200":
+          description: Usuario atualizado
+  /usuarios/{id}/ativar:
+    patch:
+      summary: Ativa usuario
+      parameters:
+        - $ref: "#/components/parameters/id"
+      responses:
+        "200":
+          description: Usuario ativado
+  /usuarios/{id}/desativar:
+    patch:
+      summary: Desativa usuario
+      parameters:
+        - $ref: "#/components/parameters/id"
+      responses:
+        "200":
+          description: Usuario desativado
   /alunos/{id}:
     get:
       summary: Busca aluno por ID
@@ -150,7 +229,38 @@ paths:
           description: Relatorio gerado
   /casos:
     get:
-      summary: Lista casos clinicos
+      summary: Lista casos clinicos com paginacao e filtros
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [RASCUNHO, PUBLICADO, ARQUIVADO]
+        - name: idProfessor
+          in: query
+          schema:
+            type: integer
+            format: int64
+            minimum: 1
+        - name: termo
+          in: query
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 0
+        - name: size
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: sort
+          in: query
+          schema:
+            type: string
+            example: dataCriacao,desc
       responses:
         "200":
           description: Casos encontrados
@@ -220,9 +330,10 @@ paths:
           description: Pergunta criada
 components:
   securitySchemes:
-    basicAuth:
+    bearerAuth:
       type: http
-      scheme: basic
+      scheme: bearer
+      bearerFormat: JWT
   parameters:
     id:
       name: id
@@ -241,6 +352,58 @@ components:
         format: int64
         minimum: 1
   schemas:
+    LoginRequest:
+      type: object
+      required:
+        - username
+        - password
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+          format: password
+    LoginResponse:
+      type: object
+      properties:
+        token:
+          type: string
+        tipo:
+          type: string
+          example: Bearer
+        expiraEm:
+          type: string
+          format: date-time
+    UsuarioRequest:
+      type: object
+      required:
+        - username
+        - senha
+        - role
+      properties:
+        username:
+          type: string
+        senha:
+          type: string
+          format: password
+        role:
+          type: string
+          enum: [ADMIN, PROFESSOR, ALUNO]
+        ativo:
+          type: boolean
+    UsuarioResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        username:
+          type: string
+        role:
+          type: string
+          enum: [ADMIN, PROFESSOR, ALUNO]
+        ativo:
+          type: boolean
     Aluno:
       type: object
       properties:

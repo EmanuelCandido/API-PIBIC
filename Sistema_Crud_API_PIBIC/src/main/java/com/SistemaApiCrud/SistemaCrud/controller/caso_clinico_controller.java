@@ -3,6 +3,10 @@ package com.SistemaApiCrud.SistemaCrud.controller;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -14,11 +18,13 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.SistemaApiCrud.SistemaCrud.DTO.caso_clinico_completo_DTO;
 import com.SistemaApiCrud.SistemaCrud.DTO.casos_clinicos_DTO;
 import com.SistemaApiCrud.SistemaCrud.DTO.pergunta_DTO;
+import com.SistemaApiCrud.SistemaCrud.entity.enums.StatusCasoClinico;
 import com.SistemaApiCrud.SistemaCrud.service.caso_clinico_service;
 import com.SistemaApiCrud.SistemaCrud.service.pergunta_service;
 
@@ -37,8 +43,12 @@ public class caso_clinico_controller {
     private pergunta_service perguntaService;
 
     @GetMapping
-    public List<casos_clinicos_DTO> listar() {
-        return service.listar();
+    public Page<casos_clinicos_DTO> listar(
+            @RequestParam(required = false) StatusCasoClinico status,
+            @RequestParam(required = false) @Min(1) Long idProfessor,
+            @RequestParam(required = false) String termo,
+            @PageableDefault(size = 20, sort = "dataCriacao", direction = Sort.Direction.DESC) Pageable pageable) {
+        return service.listarPaginado(status, idProfessor, termo, pageable);
     }
 
     @GetMapping("/{id}")

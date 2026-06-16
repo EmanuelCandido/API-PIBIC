@@ -1,42 +1,32 @@
 package com.SistemaApiCrud.SistemaCrud.config;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
-import org.springframework.security.config.Customizer;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 public class SecurityConfig {
 
-    @Value("${app.security.admin.username:admin}")
-    private String adminUsername;
-
-    @Value("${app.security.admin.password:admin123}")
-    private String adminPassword;
-
-    @Value("${app.security.professor.username:professor}")
-    private String professorUsername;
-
-    @Value("${app.security.professor.password:professor123}")
-    private String professorPassword;
-
-    @Value("${app.security.aluno.username:aluno}")
-    private String alunoUsername;
-
-    @Value("${app.security.aluno.password:aluno123}")
-    private String alunoPassword;
-
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(
+            HttpSecurity http,
+            JwtAuthenticationFilter jwtAuthenticationFilter) throws Exception {
         http.csrf(csrf -> csrf.disable())
+                .formLogin(form -> form.disable())
+                .httpBasic(basic -> basic.disable())
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
                         .requestMatchers(HttpMethod.GET, "/openapi.yaml").permitAll()
+                        .requestMatchers("/usuarios/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.GET, "/casos/**").hasAnyRole("ADMIN", "PROFESSOR")
                         .requestMatchers(HttpMethod.POST, "/casos/**").hasAnyRole("ADMIN", "PROFESSOR")
                         .requestMatchers(HttpMethod.PUT, "/casos/**").hasAnyRole("ADMIN", "PROFESSOR")
@@ -53,25 +43,18 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/professores/*/relatorio-desempenho").hasAnyRole("ADMIN", "PROFESSOR")
                         .requestMatchers("/professores/**").hasRole("ADMIN")
                         .anyRequest().authenticated())
-                .httpBasic(Customizer.withDefaults());
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
 
     @Bean
-    public UserDetailsService userDetailsService() {
-        return new InMemoryUserDetailsManager(
-                User.withUsername(adminUsername)
-                        .password("{noop}" + adminPassword)
-                        .roles("ADMIN")
-                        .build(),
-                User.withUsername(professorUsername)
-                        .password("{noop}" + professorPassword)
-                        .roles("PROFESSOR")
-                        .build(),
-                User.withUsername(alunoUsername)
-                        .password("{noop}" + alunoPassword)
-                        .roles("ALUNO")
-                        .build());
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
+        return configuration.getAuthenticationManager();
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
     }
 }
