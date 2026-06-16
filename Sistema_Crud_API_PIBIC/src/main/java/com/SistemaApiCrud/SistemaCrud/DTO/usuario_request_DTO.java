@@ -2,6 +2,7 @@ package com.SistemaApiCrud.SistemaCrud.DTO;
 
 import com.SistemaApiCrud.SistemaCrud.entity.enums.PapelUsuario;
 
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -27,4 +28,10 @@ public class usuario_request_DTO {
     private PapelUsuario role;
 
     private Boolean ativo;
+
+    @Min(value = 1, message = "O aluno informado e invalido")
+    private Long idAluno;
+
+    @Min(value = 1, message = "O professor informado e invalido")
+    private Long idProfessor;
 }

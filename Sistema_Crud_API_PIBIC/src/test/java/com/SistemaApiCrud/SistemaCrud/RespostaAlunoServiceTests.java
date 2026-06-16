@@ -17,7 +17,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.SistemaApiCrud.SistemaCrud.DTO.responder_caso_request_DTO;
-import com.SistemaApiCrud.SistemaCrud.DTO.casos_clinicos_DTO;
+import com.SistemaApiCrud.SistemaCrud.DTO.caso_clinico_response_DTO;
 import com.SistemaApiCrud.SistemaCrud.DTO.resposta_pergunta_request_DTO;
 import com.SistemaApiCrud.SistemaCrud.DTO.resultado_caso_DTO;
 import com.SistemaApiCrud.SistemaCrud.entity.AlternativaPergunta;
@@ -141,7 +141,7 @@ class RespostaAlunoServiceTests {
         casos_clinicos casoPublicado = criarCaso(StatusCasoClinico.PUBLICADO);
         criarCaso(StatusCasoClinico.RASCUNHO);
 
-        Page<casos_clinicos_DTO> pagina = casoService.listarPaginado(
+        Page<caso_clinico_response_DTO> pagina = casoService.listarPaginado(
                 StatusCasoClinico.PUBLICADO,
                 casoPublicado.getProfessor().getId(),
                 "respiratorio",

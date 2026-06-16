@@ -3,7 +3,6 @@ package com.SistemaApiCrud.SistemaCrud.service;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -11,10 +10,11 @@ import org.springframework.stereotype.Service;
 
 import com.SistemaApiCrud.SistemaCrud.DTO.alternativa_pergunta_DTO;
 import com.SistemaApiCrud.SistemaCrud.DTO.caso_clinico_completo_DTO;
-import com.SistemaApiCrud.SistemaCrud.DTO.casos_clinicos_DTO;
+import com.SistemaApiCrud.SistemaCrud.DTO.caso_clinico_request_DTO;
+import com.SistemaApiCrud.SistemaCrud.DTO.caso_clinico_response_DTO;
 import com.SistemaApiCrud.SistemaCrud.DTO.conteudo_clinico_DTO;
 import com.SistemaApiCrud.SistemaCrud.DTO.paciente_DTO;
-import com.SistemaApiCrud.SistemaCrud.DTO.pergunta_DTO;
+import com.SistemaApiCrud.SistemaCrud.DTO.pergunta_response_DTO;
 import com.SistemaApiCrud.SistemaCrud.entity.AlternativaPergunta;
 import com.SistemaApiCrud.SistemaCrud.entity.Professor;
 import com.SistemaApiCrud.SistemaCrud.entity.casos_clinicos;
@@ -22,8 +22,11 @@ import com.SistemaApiCrud.SistemaCrud.entity.conteudo_clinico;
 import com.SistemaApiCrud.SistemaCrud.entity.enums.StatusCasoClinico;
 import com.SistemaApiCrud.SistemaCrud.entity.paciente;
 import com.SistemaApiCrud.SistemaCrud.entity.pergunta;
+import com.SistemaApiCrud.SistemaCrud.exception.BadRequestException;
 import com.SistemaApiCrud.SistemaCrud.exception.BusinessException;
 import com.SistemaApiCrud.SistemaCrud.exception.RecursoNaoEncontradoException;
+import com.SistemaApiCrud.SistemaCrud.mapper.CasoClinicoMapper;
+import com.SistemaApiCrud.SistemaCrud.mapper.PerguntaMapper;
 import com.SistemaApiCrud.SistemaCrud.repository.alternativa_pergunta_repository;
 import com.SistemaApiCrud.SistemaCrud.repository.caso_clinico_repository;
 import com.SistemaApiCrud.SistemaCrud.repository.conteudo_clinico_repository;
@@ -36,32 +39,42 @@ import jakarta.persistence.criteria.Predicate;
 @Service
 public class caso_clinico_service {
 
-    @Autowired
-    private caso_clinico_repository repository;
+    private final caso_clinico_repository repository;
+    private final professor_repository professorRepository;
+    private final paciente_repository pacienteRepository;
+    private final conteudo_clinico_repository conteudoRepository;
+    private final pergunta_repository perguntaRepository;
+    private final alternativa_pergunta_repository alternativaRepository;
+    private final CasoClinicoMapper mapper;
+    private final PerguntaMapper perguntaMapper;
 
-    @Autowired
-    private professor_repository professorRepository;
+    public caso_clinico_service(
+            caso_clinico_repository repository,
+            professor_repository professorRepository,
+            paciente_repository pacienteRepository,
+            conteudo_clinico_repository conteudoRepository,
+            pergunta_repository perguntaRepository,
+            alternativa_pergunta_repository alternativaRepository,
+            CasoClinicoMapper mapper,
+            PerguntaMapper perguntaMapper) {
+        this.repository = repository;
+        this.professorRepository = professorRepository;
+        this.pacienteRepository = pacienteRepository;
+        this.conteudoRepository = conteudoRepository;
+        this.perguntaRepository = perguntaRepository;
+        this.alternativaRepository = alternativaRepository;
+        this.mapper = mapper;
+        this.perguntaMapper = perguntaMapper;
+    }
 
-    @Autowired
-    private paciente_repository pacienteRepository;
-
-    @Autowired
-    private conteudo_clinico_repository conteudoRepository;
-
-    @Autowired
-    private pergunta_repository perguntaRepository;
-
-    @Autowired
-    private alternativa_pergunta_repository alternativaRepository;
-
-    public List<casos_clinicos_DTO> listar() {
+    public List<caso_clinico_response_DTO> listar() {
         return repository.findAll()
                 .stream()
-                .map(this::paraDTO)
+                .map(mapper::toResponse)
                 .toList();
     }
 
-    public Page<casos_clinicos_DTO> listarPaginado(
+    public Page<caso_clinico_response_DTO> listarPaginado(
             StatusCasoClinico status,
             Long idProfessor,
             String termo,
@@ -71,29 +84,29 @@ public class caso_clinico_service {
         }
 
         return repository.findAll(filtrarCasos(status, idProfessor, termo), pageable)
-                .map(this::paraDTO);
+                .map(mapper::toResponse);
     }
 
-    public List<casos_clinicos_DTO> listarPublicados() {
+    public List<caso_clinico_response_DTO> listarPublicados() {
         return repository.findByStatus(StatusCasoClinico.PUBLICADO)
                 .stream()
-                .map(this::paraDTO)
+                .map(mapper::toResponse)
                 .toList();
     }
 
-    public List<casos_clinicos_DTO> listarPorProfessor(Long idProfessor) {
+    public List<caso_clinico_response_DTO> listarPorProfessor(Long idProfessor) {
         if (!professorRepository.existsById(idProfessor)) {
             throw new RecursoNaoEncontradoException("Professor nao encontrado");
         }
 
         return repository.findByProfessorId(idProfessor)
                 .stream()
-                .map(this::paraDTO)
+                .map(mapper::toResponse)
                 .toList();
     }
 
-    public casos_clinicos_DTO buscarPorId(Long id) {
-        return paraDTO(buscarEntityPorId(id));
+    public caso_clinico_response_DTO buscarPorId(Long id) {
+        return mapper.toResponse(buscarEntityPorId(id));
     }
 
     public caso_clinico_completo_DTO buscarCompletoPorId(Long id) {
@@ -110,6 +123,38 @@ public class caso_clinico_service {
         return montarCompleto(caso);
     }
 
+    public caso_clinico_response_DTO salvar(caso_clinico_request_DTO dto) {
+        return salvar(dto, dto.getIdProfessor());
+    }
+
+    public caso_clinico_response_DTO salvar(caso_clinico_request_DTO dto, Long idProfessorAutorizado) {
+        Professor professor = buscarProfessorObrigatorio(idProfessorAutorizado);
+        casos_clinicos caso = mapper.toEntity(dto, professor);
+        return mapper.toResponse(repository.save(caso));
+    }
+
+    public caso_clinico_response_DTO atualizar(Long id, caso_clinico_request_DTO dto) {
+        return atualizar(id, dto, dto.getIdProfessor());
+    }
+
+    public caso_clinico_response_DTO atualizar(Long id, caso_clinico_request_DTO dto, Long idProfessorAutorizado) {
+        casos_clinicos caso = buscarEntityPorId(id);
+        Professor professor = idProfessorAutorizado != null ? buscarProfessor(idProfessorAutorizado) : null;
+        mapper.updateEntity(dto, caso, professor);
+        return mapper.toResponse(repository.save(caso));
+    }
+
+    public caso_clinico_response_DTO publicar(Long id) {
+        casos_clinicos caso = buscarEntityPorId(id);
+        caso.setStatus(StatusCasoClinico.PUBLICADO);
+        return mapper.toResponse(repository.save(caso));
+    }
+
+    public void deletar(Long id) {
+        buscarEntityPorId(id);
+        repository.deleteById(id);
+    }
+
     private caso_clinico_completo_DTO montarCompleto(casos_clinicos caso) {
         Long id = caso.getIdCaso();
 
@@ -123,87 +168,25 @@ public class caso_clinico_service {
                 .map(this::paraConteudoDTO)
                 .toList();
 
-        List<pergunta_DTO> perguntas = perguntaRepository.findByCasoClinicoIdCaso(id)
+        List<pergunta_response_DTO> perguntas = perguntaRepository.findByCasoClinicoIdCaso(id)
                 .stream()
                 .map(this::paraPerguntaDTO)
                 .toList();
 
-        return new caso_clinico_completo_DTO(paraDTO(caso), pacientes, conteudos, perguntas);
+        return new caso_clinico_completo_DTO(mapper.toResponse(caso), pacientes, conteudos, perguntas);
     }
 
-    public casos_clinicos_DTO salvar(casos_clinicos_DTO dto) {
-        casos_clinicos caso = paraEntity(dto);
-        casos_clinicos casoSalvo = repository.save(caso);
-        return paraDTO(casoSalvo);
-    }
-
-    public casos_clinicos_DTO atualizar(Long id, casos_clinicos_DTO dto) {
-        buscarEntityPorId(id);
-
-        casos_clinicos caso = paraEntity(dto);
-        caso.setIdCaso(id);
-
-        casos_clinicos casoAtualizado = repository.save(caso);
-        return paraDTO(casoAtualizado);
-    }
-
-    public casos_clinicos_DTO publicar(Long id) {
-        casos_clinicos caso = buscarEntityPorId(id);
-        caso.setStatus(StatusCasoClinico.PUBLICADO);
-        return paraDTO(repository.save(caso));
-    }
-
-    public void deletar(Long id) {
-        buscarEntityPorId(id);
-        repository.deleteById(id);
-    }
-
-    private casos_clinicos_DTO paraDTO(casos_clinicos caso) {
-        casos_clinicos_DTO dto = new casos_clinicos_DTO();
-
-        dto.setIdCaso(caso.getIdCaso());
-
-        if (caso.getProfessor() != null) {
-            dto.setIdProfessor(caso.getProfessor().getId());
+    private Professor buscarProfessorObrigatorio(Long idProfessor) {
+        if (idProfessor == null) {
+            throw new BadRequestException("O professor e obrigatorio");
         }
 
-        dto.setTitulo(caso.getTitulo());
-        dto.setDificuldade(caso.getDificuldade());
-        dto.setDisciplina(caso.getDisciplina());
-        dto.setAreaSaude(caso.getAreaSaude());
-        dto.setEstilo(caso.getEstilo());
-        dto.setEspecialidade(caso.getEspecialidade());
-        dto.setStatus(caso.getStatus());
-        dto.setDataCriacao(caso.getDataCriacao());
-        dto.setDataAtualizacao(caso.getDataAtualizacao());
-        dto.setObjetivoAprendizagem(caso.getObjetivoAprendizagem());
-        dto.setNivelDificuldade(caso.getNivelDificuldade());
-
-        return dto;
+        return buscarProfessor(idProfessor);
     }
 
-    private casos_clinicos paraEntity(casos_clinicos_DTO dto) {
-        casos_clinicos caso = new casos_clinicos();
-
-        caso.setIdCaso(dto.getIdCaso());
-
-        if (dto.getIdProfessor() != null) {
-            Professor professor = professorRepository.findById(dto.getIdProfessor())
-                    .orElseThrow(() -> new RecursoNaoEncontradoException("Professor nao encontrado"));
-            caso.setProfessor(professor);
-        }
-
-        caso.setTitulo(dto.getTitulo());
-        caso.setDificuldade(dto.getDificuldade());
-        caso.setDisciplina(dto.getDisciplina());
-        caso.setAreaSaude(dto.getAreaSaude());
-        caso.setEstilo(dto.getEstilo());
-        caso.setEspecialidade(dto.getEspecialidade());
-        caso.setStatus(dto.getStatus());
-        caso.setObjetivoAprendizagem(dto.getObjetivoAprendizagem());
-        caso.setNivelDificuldade(dto.getNivelDificuldade());
-
-        return caso;
+    private Professor buscarProfessor(Long idProfessor) {
+        return professorRepository.findById(idProfessor)
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Professor nao encontrado"));
     }
 
     private paciente_DTO paraPacienteDTO(paciente paciente) {
@@ -236,24 +219,8 @@ public class caso_clinico_service {
         return dto;
     }
 
-    private pergunta_DTO paraPerguntaDTO(pergunta pergunta) {
-        pergunta_DTO dto = new pergunta_DTO();
-        dto.setId(pergunta.getId());
-        if (pergunta.getCasoClinico() != null) {
-            dto.setIdCaso(pergunta.getCasoClinico().getIdCaso());
-        }
-        dto.setTexto(pergunta.getTexto());
-        dto.setAlternativaA(pergunta.getAlternativaA());
-        dto.setAlternativaB(pergunta.getAlternativaB());
-        dto.setAlternativaC(pergunta.getAlternativaC());
-        dto.setAlternativaD(pergunta.getAlternativaD());
-        dto.setAlternativaE(pergunta.getAlternativaE());
-        dto.setResposta(pergunta.getResposta());
-        dto.setTipo(pergunta.getTipo());
-        dto.setGabarito(pergunta.getGabarito());
-        dto.setTempoEsperado(pergunta.getTempoEsperado());
-        dto.setAlternativas(buscarAlternativasDTO(pergunta));
-        return dto;
+    private pergunta_response_DTO paraPerguntaDTO(pergunta pergunta) {
+        return perguntaMapper.toResponse(pergunta, buscarAlternativasDTO(pergunta));
     }
 
     private List<alternativa_pergunta_DTO> buscarAlternativasDTO(pergunta pergunta) {

@@ -13,11 +13,11 @@ import lombok.Setter;
 @AllArgsConstructor
 public class caso_clinico_completo_DTO {
 
-    private casos_clinicos_DTO caso;
+    private caso_clinico_response_DTO caso;
 
     private List<paciente_DTO> pacientes;
 
     private List<conteudo_clinico_DTO> conteudosClinicos;
 
-    private List<pergunta_DTO> perguntas;
+    private List<pergunta_response_DTO> perguntas;
 }

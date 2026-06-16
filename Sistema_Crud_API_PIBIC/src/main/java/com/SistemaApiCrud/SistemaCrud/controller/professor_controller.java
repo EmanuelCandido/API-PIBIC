@@ -2,7 +2,6 @@ package com.SistemaApiCrud.SistemaCrud.controller;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -15,9 +14,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.SistemaApiCrud.SistemaCrud.DTO.Professor_DTO;
-import com.SistemaApiCrud.SistemaCrud.DTO.casos_clinicos_DTO;
+import com.SistemaApiCrud.SistemaCrud.DTO.caso_clinico_response_DTO;
+import com.SistemaApiCrud.SistemaCrud.DTO.professor_request_DTO;
+import com.SistemaApiCrud.SistemaCrud.DTO.professor_response_DTO;
 import com.SistemaApiCrud.SistemaCrud.DTO.relatorio_desempenho_professor_DTO;
+import com.SistemaApiCrud.SistemaCrud.service.AutorizacaoUsuarioService;
 import com.SistemaApiCrud.SistemaCrud.service.caso_clinico_service;
 import com.SistemaApiCrud.SistemaCrud.service.professor_service;
 import com.SistemaApiCrud.SistemaCrud.service.resposta_aluno_service;
@@ -30,44 +31,55 @@ import jakarta.validation.constraints.Min;
 @RequestMapping("/professores")
 public class professor_controller {
 
-    @Autowired
-    private professor_service service;
+    private final professor_service service;
+    private final caso_clinico_service casoService;
+    private final resposta_aluno_service respostaService;
+    private final AutorizacaoUsuarioService autorizacaoService;
 
-    @Autowired
-    private caso_clinico_service casoService;
-
-    @Autowired
-    private resposta_aluno_service respostaService;
+    public professor_controller(
+            professor_service service,
+            caso_clinico_service casoService,
+            resposta_aluno_service respostaService,
+            AutorizacaoUsuarioService autorizacaoService) {
+        this.service = service;
+        this.casoService = casoService;
+        this.respostaService = respostaService;
+        this.autorizacaoService = autorizacaoService;
+    }
 
     @GetMapping
-    public List<Professor_DTO> listar() {
+    public List<professor_response_DTO> listar() {
         return service.listar();
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Professor_DTO> buscarPorId(@PathVariable @Min(1) Long id) {
+    public ResponseEntity<professor_response_DTO> buscarPorId(@PathVariable @Min(1) Long id) {
+        autorizacaoService.validarAcessoProfessor(id);
         return ResponseEntity.ok(service.buscarPorId(id));
     }
 
     @GetMapping("/{id}/casos")
-    public List<casos_clinicos_DTO> listarCasos(@PathVariable @Min(1) Long id) {
+    public List<caso_clinico_response_DTO> listarCasos(@PathVariable @Min(1) Long id) {
+        autorizacaoService.validarAcessoProfessor(id);
         return casoService.listarPorProfessor(id);
     }
 
     @GetMapping("/{id}/relatorio-desempenho")
     public ResponseEntity<relatorio_desempenho_professor_DTO> gerarRelatorioDesempenho(@PathVariable @Min(1) Long id) {
+        autorizacaoService.validarAcessoProfessor(id);
         return ResponseEntity.ok(respostaService.gerarRelatorioProfessor(id));
     }
 
     @PostMapping
-    public ResponseEntity<Professor_DTO> salvar(@RequestBody @Valid Professor_DTO professor) {
-        Professor_DTO professorSalvo = service.salvar(professor);
+    public ResponseEntity<professor_response_DTO> salvar(@RequestBody @Valid professor_request_DTO professor) {
+        professor_response_DTO professorSalvo = service.salvar(professor);
         return ResponseEntity.status(HttpStatus.CREATED).body(professorSalvo);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Professor_DTO> atualizar(@PathVariable @Min(1) Long id,
-                                                   @RequestBody @Valid Professor_DTO professor) {
+    public ResponseEntity<professor_response_DTO> atualizar(@PathVariable @Min(1) Long id,
+                                                            @RequestBody @Valid professor_request_DTO professor) {
+        autorizacaoService.validarAcessoProfessor(id);
         return ResponseEntity.ok(service.atualizar(id, professor));
     }
 

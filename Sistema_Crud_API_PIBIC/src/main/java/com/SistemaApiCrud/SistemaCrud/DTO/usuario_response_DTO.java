@@ -20,4 +20,8 @@ public class usuario_response_DTO {
     private PapelUsuario role;
 
     private Boolean ativo;
+
+    private Long idAluno;
+
+    private Long idProfessor;
 }

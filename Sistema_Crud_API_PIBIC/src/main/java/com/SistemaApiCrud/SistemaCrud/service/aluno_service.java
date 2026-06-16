@@ -2,74 +2,51 @@ package com.SistemaApiCrud.SistemaCrud.service;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.SistemaApiCrud.SistemaCrud.DTO.aluno_DTO;
+import com.SistemaApiCrud.SistemaCrud.DTO.aluno_request_DTO;
+import com.SistemaApiCrud.SistemaCrud.DTO.aluno_response_DTO;
 import com.SistemaApiCrud.SistemaCrud.entity.Aluno;
 import com.SistemaApiCrud.SistemaCrud.exception.RecursoNaoEncontradoException;
+import com.SistemaApiCrud.SistemaCrud.mapper.AlunoMapper;
 import com.SistemaApiCrud.SistemaCrud.repository.aluno_repository;
 
 @Service
 public class aluno_service {
 
-    @Autowired
-    private aluno_repository repository;
+    private final aluno_repository repository;
+    private final AlunoMapper mapper;
 
-    public List<aluno_DTO> listar() {
+    public aluno_service(aluno_repository repository, AlunoMapper mapper) {
+        this.repository = repository;
+        this.mapper = mapper;
+    }
+
+    public List<aluno_response_DTO> listar() {
         return repository.findAll()
                 .stream()
-                .map(this::paraDTO)
+                .map(mapper::toResponse)
                 .toList();
     }
 
-    public aluno_DTO buscarPorId(Long id) {
-        return paraDTO(buscarEntityPorId(id));
+    public aluno_response_DTO buscarPorId(Long id) {
+        return mapper.toResponse(buscarEntityPorId(id));
     }
 
-    public aluno_DTO salvar(aluno_DTO dto) {
-        Aluno aluno = paraEntity(dto);
-        Aluno alunoSalvo = repository.save(aluno);
-        return paraDTO(alunoSalvo);
+    public aluno_response_DTO salvar(aluno_request_DTO dto) {
+        Aluno aluno = mapper.toEntity(dto);
+        return mapper.toResponse(repository.save(aluno));
     }
 
-    public aluno_DTO atualizar(Long id, aluno_DTO dto) {
-        buscarEntityPorId(id);
-
-        Aluno aluno = paraEntity(dto);
-        aluno.setIdAluno(id);
-
-        Aluno alunoAtualizado = repository.save(aluno);
-        return paraDTO(alunoAtualizado);
+    public aluno_response_DTO atualizar(Long id, aluno_request_DTO dto) {
+        Aluno aluno = buscarEntityPorId(id);
+        mapper.updateEntity(dto, aluno);
+        return mapper.toResponse(repository.save(aluno));
     }
 
     public void deletar(Long id) {
         buscarEntityPorId(id);
         repository.deleteById(id);
-    }
-
-    private aluno_DTO paraDTO(Aluno aluno) {
-        aluno_DTO dto = new aluno_DTO();
-
-        dto.setIdAluno(aluno.getIdAluno());
-        dto.setNome(aluno.getNome());
-        dto.setEmail(aluno.getEmail());
-        dto.setCurso(aluno.getCurso());
-        dto.setPeriodo(aluno.getPeriodo());
-
-        return dto;
-    }
-
-    private Aluno paraEntity(aluno_DTO dto) {
-        Aluno aluno = new Aluno();
-
-        aluno.setIdAluno(dto.getIdAluno());
-        aluno.setNome(dto.getNome());
-        aluno.setEmail(dto.getEmail());
-        aluno.setCurso(dto.getCurso());
-        aluno.setPeriodo(dto.getPeriodo());
-
-        return aluno;
     }
 
     private Aluno buscarEntityPorId(Long id) {

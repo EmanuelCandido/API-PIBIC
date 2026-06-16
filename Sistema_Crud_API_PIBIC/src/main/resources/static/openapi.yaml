@@ -40,7 +40,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Aluno"
+              $ref: "#/components/schemas/AlunoRequest"
       responses:
         "201":
           description: Aluno criado
@@ -324,7 +324,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Pergunta"
+              $ref: "#/components/schemas/PerguntaRequest"
       responses:
         "201":
           description: Pergunta criada
@@ -374,6 +374,22 @@ components:
         expiraEm:
           type: string
           format: date-time
+        idUsuario:
+          type: integer
+          format: int64
+        username:
+          type: string
+        role:
+          type: string
+          enum: [ADMIN, PROFESSOR, ALUNO]
+        idAluno:
+          type: integer
+          format: int64
+          nullable: true
+        idProfessor:
+          type: integer
+          format: int64
+          nullable: true
     UsuarioRequest:
       type: object
       required:
@@ -391,6 +407,16 @@ components:
           enum: [ADMIN, PROFESSOR, ALUNO]
         ativo:
           type: boolean
+        idAluno:
+          type: integer
+          format: int64
+          nullable: true
+          description: Obrigatorio para usuarios com role ALUNO.
+        idProfessor:
+          type: integer
+          format: int64
+          nullable: true
+          description: Obrigatorio para usuarios com role PROFESSOR.
     UsuarioResponse:
       type: object
       properties:
@@ -404,7 +430,32 @@ components:
           enum: [ADMIN, PROFESSOR, ALUNO]
         ativo:
           type: boolean
-    Aluno:
+        idAluno:
+          type: integer
+          format: int64
+          nullable: true
+        idProfessor:
+          type: integer
+          format: int64
+          nullable: true
+    AlunoRequest:
+      type: object
+      required:
+        - nome
+        - email
+        - curso
+        - periodo
+      properties:
+        nome:
+          type: string
+        email:
+          type: string
+          format: email
+        curso:
+          type: string
+        periodo:
+          type: string
+    AlunoResponse:
       type: object
       properties:
         idAluno:
@@ -430,7 +481,36 @@ components:
           type: string
         correta:
           type: boolean
-    Pergunta:
+    PerguntaRequest:
+      type: object
+      required:
+        - texto
+        - tipo
+        - gabarito
+        - resposta
+        - tempoEsperado
+      properties:
+        idCaso:
+          type: integer
+          format: int64
+          nullable: true
+        texto:
+          type: string
+        tipo:
+          type: string
+          enum: [MULTIPLA_ESCOLHA, DISCURSIVA, VERDADEIRO_FALSO, DIAGNOSTICO, CONDUTA_CLINICA]
+          example: MULTIPLA_ESCOLHA
+        gabarito:
+          type: string
+        resposta:
+          type: string
+        tempoEsperado:
+          type: string
+        alternativas:
+          type: array
+          items:
+            $ref: "#/components/schemas/AlternativaPergunta"
+    PerguntaResponse:
       type: object
       properties:
         id:

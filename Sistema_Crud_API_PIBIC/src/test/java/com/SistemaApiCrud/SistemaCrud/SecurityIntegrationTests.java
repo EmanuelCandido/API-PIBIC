@@ -44,26 +44,79 @@ class SecurityIntegrationTests {
 
     @Test
     void deveAutenticarComJwtEAcessarRotaProtegida() throws Exception {
-        String respostaLogin = mockMvc.perform(post("/auth/login")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("""
-                                {
-                                  "username": "admin",
-                                  "password": "admin123"
-                                }
-                                """))
-                .andExpect(status().isOk())
-                .andReturn()
-                .getResponse()
-                .getContentAsString();
-
-        Map<String, Object> json = objectMapper.readValue(respostaLogin, new TypeReference<>() {});
+        Map<String, Object> json = login("admin", "admin123");
         String token = (String) json.get("token");
 
         assertThat(token).isNotBlank();
 
         mockMvc.perform(get("/usuarios")
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void devePermitirAlunoAcessarSomenteProprioPerfil() throws Exception {
+        Map<String, Object> json = login("aluno", "aluno123");
+        String token = (String) json.get("token");
+        Long idAluno = ((Number) json.get("idAluno")).longValue();
+
+        mockMvc.perform(get("/alunos/" + idAluno + "/historico")
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
                 .andExpect(status().isOk());
+
+        mockMvc.perform(get("/alunos/" + (idAluno + 999L) + "/historico")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void deveCriarCasoNoProfessorAutenticadoEBloquearFiltroDeOutroProfessor() throws Exception {
+        Map<String, Object> json = login("professor", "professor123");
+        String token = (String) json.get("token");
+        Long idProfessor = ((Number) json.get("idProfessor")).longValue();
+
+        String respostaCaso = mockMvc.perform(post("/casos")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "titulo": "Caso de seguranca",
+                                  "dificuldade": "MEDIA",
+                                  "disciplina": "Clinica Medica",
+                                  "areaSaude": "Medicina",
+                                  "estilo": "Multipla escolha",
+                                  "especialidade": "Pneumologia",
+                                  "objetivoAprendizagem": "Testar acesso por dono",
+                                  "nivelDificuldade": "MEDIA"
+                                }
+                                """))
+                .andExpect(status().isCreated())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        Map<String, Object> caso = objectMapper.readValue(respostaCaso, new TypeReference<>() {});
+        assertThat(((Number) caso.get("idProfessor")).longValue()).isEqualTo(idProfessor);
+
+        mockMvc.perform(get("/casos?idProfessor=" + (idProfessor + 999L))
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
+                .andExpect(status().isForbidden());
+    }
+
+    private Map<String, Object> login(String username, String password) throws Exception {
+        String respostaLogin = mockMvc.perform(post("/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "username": "%s",
+                                  "password": "%s"
+                                }
+                                """.formatted(username, password)))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        return objectMapper.readValue(respostaLogin, new TypeReference<>() {});
     }
 }

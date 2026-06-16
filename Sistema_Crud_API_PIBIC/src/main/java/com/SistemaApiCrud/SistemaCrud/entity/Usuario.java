@@ -9,6 +9,8 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -39,4 +41,12 @@ public class Usuario {
 
     @Column(nullable = false)
     private Boolean ativo = true;
+
+    @OneToOne
+    @JoinColumn(name = "fk_id_aluno", unique = true)
+    private Aluno aluno;
+
+    @OneToOne
+    @JoinColumn(name = "fk_id_professor", unique = true)
+    private Professor professor;
 }

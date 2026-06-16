@@ -11,6 +11,8 @@ API REST para cadastro, publicacao e resolucao de casos clinicos em um contexto 
 - Bean Validation
 - Spring Security
 - JWT com senhas BCrypt
+- Vínculo de usuario com perfil de aluno/professor
+- DTOs separados para entrada/saida com camada de mapper
 - Flyway
 - PostgreSQL
 - H2 para testes
@@ -89,7 +91,7 @@ Os testes usam H2 em memoria, configurado em `src/test/resources/application.pro
 ## Valores Padronizados
 
 - `status`: `RASCUNHO`, `PUBLICADO`, `ARQUIVADO`
-- `nivelDificuldade`: `FACIL`, `MEDIA`, `DIFICIL`
+- `nivelDificuldade`: `BAIXA`, `MEDIA`, `ALTA`
 - `tipo` da pergunta: `MULTIPLA_ESCOLHA`, `DISCURSIVA`, `VERDADEIRO_FALSO`, `DIAGNOSTICO`, `CONDUTA_CLINICA`
 - `sexo`: `MASCULINO`, `FEMININO`, `OUTRO`, `NAO_INFORMADO`
 - `estadoCivil`: `SOLTEIRO`, `CASADO`, `DIVORCIADO`, `VIUVO`, `SEPARADO`, `UNIAO_ESTAVEL`, `NAO_INFORMADO`
@@ -156,23 +158,51 @@ A API usa JWT. Primeiro autentique em `POST /auth/login`:
 }
 ```
 
-A resposta retorna um token. Use esse token nas demais requisicoes:
+A resposta retorna o token e tambem os dados principais do usuario autenticado:
+
+```json
+{
+  "token": "<jwt>",
+  "tipo": "Bearer",
+  "expiraEm": "2026-06-16T20:00:00Z",
+  "idUsuario": 1,
+  "username": "aluno",
+  "role": "ALUNO",
+  "idAluno": 1,
+  "idProfessor": null
+}
+```
+
+Use esse token nas demais requisicoes:
 
 ```http
 Authorization: Bearer <token>
 ```
 
 Os usuarios sao salvos na tabela `usuario`, com senha criptografada usando BCrypt e role `ADMIN`, `PROFESSOR` ou `ALUNO`.
+Usuarios com role `ALUNO` devem ter `idAluno`; usuarios com role `PROFESSOR` devem ter `idProfessor`.
 
 Em ambiente local, a aplicacao cria estes usuarios iniciais no banco se eles ainda nao existirem:
 
 - `admin` / `admin123` com papel `ADMIN`
-- `professor` / `professor123` com papel `PROFESSOR`
-- `aluno` / `aluno123` com papel `ALUNO`
+- `professor` / `professor123` com papel `PROFESSOR` vinculado a um professor inicial
+- `aluno` / `aluno123` com papel `ALUNO` vinculado a um aluno inicial
 
 Novos usuarios devem ser cadastrados por um usuario `ADMIN` em `POST /usuarios`.
 
-Alunos acessam casos publicados pelos endpoints de aluno. Professores e administradores acessam a gestao completa de casos.
+Exemplo de usuario professor:
+
+```json
+{
+  "username": "professor2",
+  "senha": "senha123",
+  "role": "PROFESSOR",
+  "ativo": true,
+  "idProfessor": 2
+}
+```
+
+Alunos acessam apenas o proprio perfil, historico, desempenho e respostas pelos endpoints de aluno. Professores acessam apenas o proprio perfil e os proprios casos; ao criar caso, o backend usa o professor vinculado ao token. Administradores continuam com acesso de gestao geral.
 
 ## Autores
 
