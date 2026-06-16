@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import com.SistemaApiCrud.SistemaCrud.DTO.Professor_DTO;
 import com.SistemaApiCrud.SistemaCrud.entity.Professor;
+import com.SistemaApiCrud.SistemaCrud.exception.RecursoNaoEncontradoException;
 import com.SistemaApiCrud.SistemaCrud.repository.professor_repository;
 
 @Service
@@ -22,22 +23,29 @@ public class professor_service {
                 .toList();
     }
 
+    public Professor_DTO buscarPorId(Long id) {
+        return paraDTO(buscarEntityPorId(id));
+    }
+
     public Professor_DTO salvar(Professor_DTO dto) {
         Professor professor = paraEntity(dto);
         Professor professorSalvo = repository.save(professor);
         return paraDTO(professorSalvo);
     }
 
-    public void deletar(Long id) {
-        repository.deleteById(id);
-    }
-
     public Professor_DTO atualizar(Long id, Professor_DTO dto) {
+        buscarEntityPorId(id);
+
         Professor professor = paraEntity(dto);
         professor.setId(id);
 
         Professor professorAtualizado = repository.save(professor);
         return paraDTO(professorAtualizado);
+    }
+
+    public void deletar(Long id) {
+        buscarEntityPorId(id);
+        repository.deleteById(id);
     }
 
     private Professor_DTO paraDTO(Professor professor) {
@@ -60,5 +68,10 @@ public class professor_service {
         professor.setMateria(dto.getMateria());
 
         return professor;
+    }
+
+    private Professor buscarEntityPorId(Long id) {
+        return repository.findById(id)
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Professor nao encontrado"));
     }
 }

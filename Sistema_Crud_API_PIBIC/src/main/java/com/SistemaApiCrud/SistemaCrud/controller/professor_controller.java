@@ -2,9 +2,9 @@ package com.SistemaApiCrud.SistemaCrud.controller;
 
 import java.util.List;
 
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.Min;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,39 +14,46 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import com.SistemaApiCrud.SistemaCrud.service.professor_service;
+
 import com.SistemaApiCrud.SistemaCrud.DTO.Professor_DTO;
+import com.SistemaApiCrud.SistemaCrud.service.professor_service;
+
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
 
 @Validated
 @RestController
 @RequestMapping("/professores")
 public class professor_controller {
 
-	  @Autowired
-	    private professor_service service;
-	  
-	    @GetMapping
-	    public List<Professor_DTO> listar() {
-	        return service.listar();
-	    }
+    @Autowired
+    private professor_service service;
 
-	    @PostMapping
-	    public Professor_DTO salvar(@RequestBody @Valid @Min(1) Professor_DTO professor) {
-	        return service.salvar(professor);
-	    }
+    @GetMapping
+    public List<Professor_DTO> listar() {
+        return service.listar();
+    }
 
-	    @PutMapping("/{id}")
-	    public Professor_DTO atualizar(@PathVariable Long id,
-	                                   @RequestBody @Valid Professor_DTO professor) {
+    @GetMapping("/{id}")
+    public ResponseEntity<Professor_DTO> buscarPorId(@PathVariable @Min(1) Long id) {
+        return ResponseEntity.ok(service.buscarPorId(id));
+    }
 
-	        return service.atualizar(id, professor);
-	    }
+    @PostMapping
+    public ResponseEntity<Professor_DTO> salvar(@RequestBody @Valid Professor_DTO professor) {
+        Professor_DTO professorSalvo = service.salvar(professor);
+        return ResponseEntity.status(HttpStatus.CREATED).body(professorSalvo);
+    }
 
-	    @DeleteMapping("/{id}")
-	    public void deletar(@PathVariable Long id) {
-	        service.deletar(id);
-	    }
-	
-	
-	
+    @PutMapping("/{id}")
+    public ResponseEntity<Professor_DTO> atualizar(@PathVariable @Min(1) Long id,
+                                                   @RequestBody @Valid Professor_DTO professor) {
+        return ResponseEntity.ok(service.atualizar(id, professor));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deletar(@PathVariable @Min(1) Long id) {
+        service.deletar(id);
+        return ResponseEntity.noContent().build();
+    }
 }

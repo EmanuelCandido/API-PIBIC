@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import com.SistemaApiCrud.SistemaCrud.DTO.pergunta_DTO;
 import com.SistemaApiCrud.SistemaCrud.entity.casos_clinicos;
 import com.SistemaApiCrud.SistemaCrud.entity.pergunta;
+import com.SistemaApiCrud.SistemaCrud.exception.RecursoNaoEncontradoException;
 import com.SistemaApiCrud.SistemaCrud.repository.caso_clinico_repository;
 import com.SistemaApiCrud.SistemaCrud.repository.pergunta_repository;
 
@@ -27,22 +28,29 @@ public class pergunta_service {
                 .toList();
     }
 
+    public pergunta_DTO buscarPorId(Long id) {
+        return paraDTO(buscarEntityPorId(id));
+    }
+
     public pergunta_DTO salvar(pergunta_DTO dto) {
         pergunta pergunta = paraEntity(dto);
         pergunta perguntaSalva = repository.save(pergunta);
         return paraDTO(perguntaSalva);
     }
 
-    public void deletar(Long id) {
-        repository.deleteById(id);
-    }
-
     public pergunta_DTO atualizar(Long id, pergunta_DTO dto) {
+        buscarEntityPorId(id);
+
         pergunta pergunta = paraEntity(dto);
         pergunta.setId(id);
 
         pergunta perguntaAtualizada = repository.save(pergunta);
         return paraDTO(perguntaAtualizada);
+    }
+
+    public void deletar(Long id) {
+        buscarEntityPorId(id);
+        repository.deleteById(id);
     }
 
     private pergunta_DTO paraDTO(pergunta pergunta) {
@@ -75,7 +83,7 @@ public class pergunta_service {
 
         if (dto.getIdCaso() != null) {
             casos_clinicos caso = casoRepository.findById(dto.getIdCaso())
-                    .orElseThrow(() -> new RuntimeException("Caso clínico não encontrado"));
+                    .orElseThrow(() -> new RecursoNaoEncontradoException("Caso clinico nao encontrado"));
             pergunta.setCasoClinico(caso);
         }
 
@@ -91,5 +99,10 @@ public class pergunta_service {
         pergunta.setTempoEsperado(dto.getTempoEsperado());
 
         return pergunta;
+    }
+
+    private pergunta buscarEntityPorId(Long id) {
+        return repository.findById(id)
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Pergunta nao encontrada"));
     }
 }

@@ -8,82 +8,95 @@ import org.springframework.stereotype.Service;
 import com.SistemaApiCrud.SistemaCrud.DTO.paciente_DTO;
 import com.SistemaApiCrud.SistemaCrud.entity.casos_clinicos;
 import com.SistemaApiCrud.SistemaCrud.entity.paciente;
+import com.SistemaApiCrud.SistemaCrud.exception.RecursoNaoEncontradoException;
 import com.SistemaApiCrud.SistemaCrud.repository.caso_clinico_repository;
 import com.SistemaApiCrud.SistemaCrud.repository.paciente_repository;
 
 @Service
 public class paciente_service {
 
-	@Autowired
-	private paciente_repository repository;
+    @Autowired
+    private paciente_repository repository;
 
-	@Autowired
-	private caso_clinico_repository casoRepository;
+    @Autowired
+    private caso_clinico_repository casoRepository;
 
-	public List<paciente_DTO> listar() {
-		return repository.findAll()
-				.stream()
-				.map(this::paraDTO)
-				.toList();
-	}
+    public List<paciente_DTO> listar() {
+        return repository.findAll()
+                .stream()
+                .map(this::paraDTO)
+                .toList();
+    }
 
-	public paciente_DTO salvar(paciente_DTO dto) {
-		paciente paciente = paraEntity(dto);
-		paciente pacienteSalvo = repository.save(paciente);
-		return paraDTO(pacienteSalvo);
-	}
+    public paciente_DTO buscarPorId(Long id) {
+        return paraDTO(buscarEntityPorId(id));
+    }
 
-	public void deletar(Long id) {
-		repository.deleteById(id);
-	}
+    public paciente_DTO salvar(paciente_DTO dto) {
+        paciente paciente = paraEntity(dto);
+        paciente pacienteSalvo = repository.save(paciente);
+        return paraDTO(pacienteSalvo);
+    }
 
-	public paciente_DTO atualizar(Long id, paciente_DTO dto) {
-		paciente paciente = paraEntity(dto);
-		paciente.setIdPaciente(id);
+    public paciente_DTO atualizar(Long id, paciente_DTO dto) {
+        buscarEntityPorId(id);
 
-		paciente pacienteAtualizado = repository.save(paciente);
-		return paraDTO(pacienteAtualizado);
-	}
+        paciente paciente = paraEntity(dto);
+        paciente.setIdPaciente(id);
 
-	private paciente_DTO paraDTO(paciente paciente) {
-		paciente_DTO dto = new paciente_DTO();
+        paciente pacienteAtualizado = repository.save(paciente);
+        return paraDTO(pacienteAtualizado);
+    }
 
-		dto.setIdPaciente(paciente.getIdPaciente());
+    public void deletar(Long id) {
+        buscarEntityPorId(id);
+        repository.deleteById(id);
+    }
 
-		if (paciente.getCasoClinico() != null) {
-			dto.setIdCaso(paciente.getCasoClinico().getIdCaso());
-		}
+    private paciente_DTO paraDTO(paciente paciente) {
+        paciente_DTO dto = new paciente_DTO();
 
-		dto.setNome(paciente.getNome());
-		dto.setProfissao(paciente.getProfissao());
-		dto.setSexo(paciente.getSexo());
-		dto.setIdade(paciente.getIdade());
-		dto.setEstadoCivil(paciente.getEstadoCivil());
-		dto.setAltura(paciente.getAltura());
-		dto.setPeso(paciente.getPeso());
+        dto.setIdPaciente(paciente.getIdPaciente());
 
-		return dto;
-	}
+        if (paciente.getCasoClinico() != null) {
+            dto.setIdCaso(paciente.getCasoClinico().getIdCaso());
+        }
 
-	private paciente paraEntity(paciente_DTO dto) {
-		paciente paciente = new paciente();
+        dto.setNome(paciente.getNome());
+        dto.setProfissao(paciente.getProfissao());
+        dto.setSexo(paciente.getSexo());
+        dto.setIdade(paciente.getIdade());
+        dto.setEstadoCivil(paciente.getEstadoCivil());
+        dto.setAltura(paciente.getAltura());
+        dto.setPeso(paciente.getPeso());
 
-		paciente.setIdPaciente(dto.getIdPaciente());
+        return dto;
+    }
 
-		if (dto.getIdCaso() != null) {
-			casos_clinicos caso = casoRepository.findById(dto.getIdCaso())
-					.orElseThrow(() -> new RuntimeException("Caso clínico não encontrado"));
-			paciente.setCasoClinico(caso);
-		}
+    private paciente paraEntity(paciente_DTO dto) {
+        paciente paciente = new paciente();
 
-		paciente.setNome(dto.getNome());
-		paciente.setProfissao(dto.getProfissao());
-		paciente.setSexo(dto.getSexo());
-		paciente.setIdade(dto.getIdade());
-		paciente.setEstadoCivil(dto.getEstadoCivil());
-		paciente.setAltura(dto.getAltura());
-		paciente.setPeso(dto.getPeso());
+        paciente.setIdPaciente(dto.getIdPaciente());
 
-		return paciente;
-	}
+        if (dto.getIdCaso() != null) {
+            casos_clinicos caso = casoRepository.findById(dto.getIdCaso())
+                    .orElseThrow(() -> new RecursoNaoEncontradoException("Caso clinico nao encontrado"));
+            paciente.setCasoClinico(caso);
+        }
+
+        paciente.setNome(dto.getNome());
+        paciente.setProfissao(dto.getProfissao());
+        paciente.setSexo(dto.getSexo());
+        paciente.setIdade(dto.getIdade());
+        paciente.setEstadoCivil(dto.getEstadoCivil());
+        paciente.setAltura(dto.getAltura());
+        paciente.setPeso(dto.getPeso());
+
+        return paciente;
+    }
+
+    private paciente buscarEntityPorId(Long id) {
+        return repository.findById(id)
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Paciente nao encontrado"));
+    }
 }

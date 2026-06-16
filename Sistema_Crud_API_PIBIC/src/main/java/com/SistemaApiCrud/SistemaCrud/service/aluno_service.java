@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import com.SistemaApiCrud.SistemaCrud.DTO.aluno_DTO;
 import com.SistemaApiCrud.SistemaCrud.entity.Aluno;
+import com.SistemaApiCrud.SistemaCrud.exception.RecursoNaoEncontradoException;
 import com.SistemaApiCrud.SistemaCrud.repository.aluno_repository;
 
 @Service
@@ -22,22 +23,29 @@ public class aluno_service {
                 .toList();
     }
 
+    public aluno_DTO buscarPorId(Long id) {
+        return paraDTO(buscarEntityPorId(id));
+    }
+
     public aluno_DTO salvar(aluno_DTO dto) {
         Aluno aluno = paraEntity(dto);
         Aluno alunoSalvo = repository.save(aluno);
         return paraDTO(alunoSalvo);
     }
 
-    public void deletar(Long id) {
-        repository.deleteById(id);
-    }
-
     public aluno_DTO atualizar(Long id, aluno_DTO dto) {
+        buscarEntityPorId(id);
+
         Aluno aluno = paraEntity(dto);
         aluno.setIdAluno(id);
 
         Aluno alunoAtualizado = repository.save(aluno);
         return paraDTO(alunoAtualizado);
+    }
+
+    public void deletar(Long id) {
+        buscarEntityPorId(id);
+        repository.deleteById(id);
     }
 
     private aluno_DTO paraDTO(Aluno aluno) {
@@ -62,5 +70,10 @@ public class aluno_service {
         aluno.setPeriodo(dto.getPeriodo());
 
         return aluno;
+    }
+
+    private Aluno buscarEntityPorId(Long id) {
+        return repository.findById(id)
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Aluno nao encontrado"));
     }
 }

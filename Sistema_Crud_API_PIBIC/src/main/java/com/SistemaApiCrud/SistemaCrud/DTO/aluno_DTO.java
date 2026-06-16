@@ -1,6 +1,5 @@
 package com.SistemaApiCrud.SistemaCrud.DTO;
 
-
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
@@ -12,21 +11,20 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-
 public class aluno_DTO {
+
     private Long idAluno;
 
-    @NotBlank(message = "O nome do aluno é obrigatório")
+    @NotBlank(message = "O nome do aluno e obrigatorio")
     private String nome;
 
-    @NotBlank(message = "E-mail obrigatório")
-    @Email(message = "E-mail válido")
+    @NotBlank(message = "E-mail obrigatorio")
+    @Email(message = "E-mail invalido")
     private String email;
 
-    @NotBlank(message = "A curso é obrigatória")
+    @NotBlank(message = "O curso e obrigatorio")
     private String curso;
 
-    @NotBlank(message = "Periodo obrigatório")
+    @NotBlank(message = "Periodo obrigatorio")
     private String periodo;
-
 }

@@ -15,13 +15,13 @@ public class Professor_DTO {
 
     private Long id;
 
-    @NotBlank(message = "O nome do professor é obrigatório")
+    @NotBlank(message = "O nome do professor e obrigatorio")
     private String nome;
 
-    @NotBlank(message = "E-mail obrigatório")
-    @Email(message = "E-mail válido")
+    @NotBlank(message = "E-mail obrigatorio")
+    @Email(message = "E-mail invalido")
     private String email;
 
-    @NotBlank(message = "A matéria é obrigatória")
+    @NotBlank(message = "A materia e obrigatoria")
     private String materia;
 }

@@ -8,80 +8,93 @@ import org.springframework.stereotype.Service;
 import com.SistemaApiCrud.SistemaCrud.DTO.casos_clinicos_DTO;
 import com.SistemaApiCrud.SistemaCrud.entity.Professor;
 import com.SistemaApiCrud.SistemaCrud.entity.casos_clinicos;
+import com.SistemaApiCrud.SistemaCrud.exception.RecursoNaoEncontradoException;
 import com.SistemaApiCrud.SistemaCrud.repository.caso_clinico_repository;
 import com.SistemaApiCrud.SistemaCrud.repository.professor_repository;
 
 @Service
 public class caso_clinico_service {
 
-	@Autowired
-	private caso_clinico_repository repository;
+    @Autowired
+    private caso_clinico_repository repository;
 
-	@Autowired
-	private professor_repository professorRepository;
+    @Autowired
+    private professor_repository professorRepository;
 
-	public List<casos_clinicos_DTO> listar() {
-		return repository.findAll()
-				.stream()
-				.map(this::paraDTO)
-				.toList();
-	}
+    public List<casos_clinicos_DTO> listar() {
+        return repository.findAll()
+                .stream()
+                .map(this::paraDTO)
+                .toList();
+    }
 
-	public casos_clinicos_DTO salvar(casos_clinicos_DTO dto) {
-		casos_clinicos caso = paraEntity(dto);
-		casos_clinicos casoSalvo = repository.save(caso);
-		return paraDTO(casoSalvo);
-	}
+    public casos_clinicos_DTO buscarPorId(Long id) {
+        return paraDTO(buscarEntityPorId(id));
+    }
 
-	public void deletar(Long id) {
-		repository.deleteById(id);
-	}
+    public casos_clinicos_DTO salvar(casos_clinicos_DTO dto) {
+        casos_clinicos caso = paraEntity(dto);
+        casos_clinicos casoSalvo = repository.save(caso);
+        return paraDTO(casoSalvo);
+    }
 
-	public casos_clinicos_DTO atualizar(Long id, casos_clinicos_DTO dto) {
-		casos_clinicos caso = paraEntity(dto);
-		caso.setIdCaso(id);
+    public casos_clinicos_DTO atualizar(Long id, casos_clinicos_DTO dto) {
+        buscarEntityPorId(id);
 
-		casos_clinicos casoAtualizado = repository.save(caso);
-		return paraDTO(casoAtualizado);
-	}
+        casos_clinicos caso = paraEntity(dto);
+        caso.setIdCaso(id);
 
-	private casos_clinicos_DTO paraDTO(casos_clinicos caso) {
-		casos_clinicos_DTO dto = new casos_clinicos_DTO();
+        casos_clinicos casoAtualizado = repository.save(caso);
+        return paraDTO(casoAtualizado);
+    }
 
-		dto.setIdCaso(caso.getIdCaso());
+    public void deletar(Long id) {
+        buscarEntityPorId(id);
+        repository.deleteById(id);
+    }
 
-		if (caso.getProfessor() != null) {
-			dto.setIdProfessor(caso.getProfessor().getId());
-		}
+    private casos_clinicos_DTO paraDTO(casos_clinicos caso) {
+        casos_clinicos_DTO dto = new casos_clinicos_DTO();
 
-		dto.setTitulo(caso.getTitulo());
-		dto.setDificuldade(caso.getDificuldade());
-		dto.setDisciplina(caso.getDisciplina());
-		dto.setAreaSaude(caso.getAreaSaude());
-		dto.setEstilo(caso.getEstilo());
-		dto.setEspecialidade(caso.getEspecialidade());
+        dto.setIdCaso(caso.getIdCaso());
 
-		return dto;
-	}
+        if (caso.getProfessor() != null) {
+            dto.setIdProfessor(caso.getProfessor().getId());
+        }
 
-	private casos_clinicos paraEntity(casos_clinicos_DTO dto) {
-		casos_clinicos caso = new casos_clinicos();
+        dto.setTitulo(caso.getTitulo());
+        dto.setDificuldade(caso.getDificuldade());
+        dto.setDisciplina(caso.getDisciplina());
+        dto.setAreaSaude(caso.getAreaSaude());
+        dto.setEstilo(caso.getEstilo());
+        dto.setEspecialidade(caso.getEspecialidade());
 
-		caso.setIdCaso(dto.getIdCaso());
+        return dto;
+    }
 
-		if (dto.getIdProfessor() != null) {
-			Professor professor = professorRepository.findById(dto.getIdProfessor())
-					.orElseThrow(() -> new RuntimeException("Professor não encontrado"));
-			caso.setProfessor(professor);
-		}
+    private casos_clinicos paraEntity(casos_clinicos_DTO dto) {
+        casos_clinicos caso = new casos_clinicos();
 
-		caso.setTitulo(dto.getTitulo());
-		caso.setDificuldade(dto.getDificuldade());
-		caso.setDisciplina(dto.getDisciplina());
-		caso.setAreaSaude(dto.getAreaSaude());
-		caso.setEstilo(dto.getEstilo());
-		caso.setEspecialidade(dto.getEspecialidade());
+        caso.setIdCaso(dto.getIdCaso());
 
-		return caso;
-	}
+        if (dto.getIdProfessor() != null) {
+            Professor professor = professorRepository.findById(dto.getIdProfessor())
+                    .orElseThrow(() -> new RecursoNaoEncontradoException("Professor nao encontrado"));
+            caso.setProfessor(professor);
+        }
+
+        caso.setTitulo(dto.getTitulo());
+        caso.setDificuldade(dto.getDificuldade());
+        caso.setDisciplina(dto.getDisciplina());
+        caso.setAreaSaude(dto.getAreaSaude());
+        caso.setEstilo(dto.getEstilo());
+        caso.setEspecialidade(dto.getEspecialidade());
+
+        return caso;
+    }
+
+    private casos_clinicos buscarEntityPorId(Long id) {
+        return repository.findById(id)
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Caso clinico nao encontrado"));
+    }
 }

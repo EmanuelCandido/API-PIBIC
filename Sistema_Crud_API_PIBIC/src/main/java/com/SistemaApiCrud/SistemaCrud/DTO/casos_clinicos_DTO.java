@@ -1,5 +1,6 @@
 package com.SistemaApiCrud.SistemaCrud.DTO;
 
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -15,24 +16,25 @@ public class casos_clinicos_DTO {
 
     private Long idCaso;
 
-    @NotNull(message = "O professor é obrigatório")
+    @NotNull(message = "O professor e obrigatorio")
+    @Min(value = 1, message = "O professor informado e invalido")
     private Long idProfessor;
 
-    @NotBlank(message = "O título do caso clínico é obrigatório")
+    @NotBlank(message = "O titulo do caso clinico e obrigatorio")
     private String titulo;
 
-    @NotBlank(message = "A dificuldade é obrigatória")
+    @NotBlank(message = "A dificuldade e obrigatoria")
     private String dificuldade;
 
-    @NotBlank(message = "A disciplina é obrigatória")
+    @NotBlank(message = "A disciplina e obrigatoria")
     private String disciplina;
 
-    @NotBlank(message = "A área da saúde é obrigatória")
+    @NotBlank(message = "A area da saude e obrigatoria")
     private String areaSaude;
 
-    @NotBlank(message = "O estilo é obrigatório")
+    @NotBlank(message = "O estilo e obrigatorio")
     private String estilo;
 
-    @NotBlank(message = "A especialidade é obrigatória")
+    @NotBlank(message = "A especialidade e obrigatoria")
     private String especialidade;
 }
