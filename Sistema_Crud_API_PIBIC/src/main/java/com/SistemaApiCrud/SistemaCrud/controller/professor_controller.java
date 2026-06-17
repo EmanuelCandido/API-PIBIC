@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.SistemaApiCrud.SistemaCrud.DTO.caso_clinico_response_DTO;
+import com.SistemaApiCrud.SistemaCrud.DTO.professor_cadastro_request_DTO;
 import com.SistemaApiCrud.SistemaCrud.DTO.professor_request_DTO;
 import com.SistemaApiCrud.SistemaCrud.DTO.professor_response_DTO;
 import com.SistemaApiCrud.SistemaCrud.DTO.relatorio_desempenho_professor_DTO;
@@ -73,6 +74,13 @@ public class professor_controller {
     @PostMapping
     public ResponseEntity<professor_response_DTO> salvar(@RequestBody @Valid professor_request_DTO professor) {
         professor_response_DTO professorSalvo = service.salvar(professor);
+        return ResponseEntity.status(HttpStatus.CREATED).body(professorSalvo);
+    }
+
+    @PostMapping("/cadastro")
+    public ResponseEntity<professor_response_DTO> cadastrarPublico(
+            @RequestBody @Valid professor_cadastro_request_DTO professor) {
+        professor_response_DTO professorSalvo = service.cadastrarPublico(professor);
         return ResponseEntity.status(HttpStatus.CREATED).body(professorSalvo);
     }
 

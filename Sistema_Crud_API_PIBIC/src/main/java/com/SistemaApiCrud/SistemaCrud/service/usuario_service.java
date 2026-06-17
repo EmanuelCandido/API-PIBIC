@@ -56,9 +56,15 @@ public class usuario_service {
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Usuario nao encontrado"));
     }
 
+    public void validarUsernameDisponivel(String username) {
+        if (repository.existsByUsername(username)) {
+            throw new BusinessException("Ja existe um usuario cadastrado com esse nome de acesso");
+        }
+    }
+
     public usuario_response_DTO salvar(usuario_request_DTO dto) {
         if (repository.existsByUsername(dto.getUsername())) {
-            throw new BusinessException("Ja existe usuario cadastrado com esse username");
+            throw new BusinessException("Ja existe um usuario cadastrado com esse nome de acesso");
         }
 
         Usuario usuario = aplicarDados(dto, new Usuario());
@@ -71,7 +77,7 @@ public class usuario_service {
         repository.findByUsername(dto.getUsername())
                 .filter(usuarioEncontrado -> !usuarioEncontrado.getId().equals(id))
                 .ifPresent(usuarioEncontrado -> {
-                    throw new BusinessException("Ja existe usuario cadastrado com esse username");
+                    throw new BusinessException("Ja existe um usuario cadastrado com esse nome de acesso");
                 });
 
         return mapper.toResponse(repository.save(aplicarDados(dto, usuario)));
