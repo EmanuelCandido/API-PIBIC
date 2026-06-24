@@ -1,10 +1,46 @@
-Sistema_Crud_API_PIBIC/target/
-*.class
-.idea/
-target/
-*.iml
-out/
-build/
+# Variáveis de ambiente e segredos locais
 .env
 .env.*
 !.env.example
+
+# Maven, Gradle e artefatos compilados
+target/
+build/
+out/
+.gradle/
+*.class
+*.jar
+*.war
+*.ear
+
+# IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# Visual Studio Code
+.vscode/
+
+# Metadados locais de assistentes de desenvolvimento
+.agents/
+.codex/
+
+# Logs e arquivos temporários
+*.log
+logs/
+tmp/
+temp/
+*.tmp
+*.swp
+*~
+
+# Relatórios e cobertura
+coverage/
+.nyc_output/
+jacoco.exec
+
+# Arquivos do sistema operacional
+.DS_Store
+Thumbs.db
+Desktop.ini
